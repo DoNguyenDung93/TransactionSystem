@@ -14,4 +14,25 @@ CREATE TABLE Warehouse( W_ID int PRIMARY KEY, W_NAME varchar, W_STREET_1 varchar
 
 COPY Warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_TAX, W_YTD) FROM './Downloads/4224-project-files/data-files/warehouse.csv';
 
+// STOCK Tables
 
+CREATE TABLE IF NOT EXISTS Stock(
+    S_W_ID int PRIMARY KEY,
+    S_I_ID int,
+    S_QUANTITY decimal(4,0),
+    S_YTD decimal(8,2),
+    S_ORDER_CNT int,
+    S_REMOTE_CNT int,
+    S_DIST_01 char(24),
+    S_DIST_02 char(24),
+    S_DIST_03 char(24),
+    S_DIST_04 char(24),
+    S_DIST_05 char(24),
+    S_DIST_06 char(24),
+    S_DIST_07 char(24),
+    S_DIST_08 char(24),
+    S_DIST_09 char(24),
+    S_DIST_10 char(24),
+    S_DATA varchar(20),
+    PRIMARY KEY S_W_ID,
+);
