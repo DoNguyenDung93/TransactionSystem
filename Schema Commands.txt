@@ -1,0 +1,17 @@
+1. Creating Keyspace
+
+CREATE KEYSPACE cs4224 WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+
+2. Use Keyspace
+
+USE cs4224;
+
+3. Creating Tables
+
+CREATE TABLE Warehouse( W_ID int PRIMARY KEY, W_NAME varchar, W_STREET_1 varchar, W_STREET_2 varchar, W_CITY varchar, W_STATE varchar, W_ZIP varchar, W_TAX decimal, W_YTD decimal );
+
+4. Insert data from CSV into tables
+
+COPY Warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_TAX, W_YTD) FROM './Downloads/4224-project-files/data-files/warehouse.csv';
+
+
