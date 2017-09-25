@@ -64,11 +64,20 @@ CREATE TABLE IF NOT EXISTS order_(
     O_D_ID int,
     O_ID int,
     O_C_ID int,
-    O_CARRIER_ID int 
+    O_CARRIER_ID int,
     O_OL_CNT decimal,
     O_ALL_LOCAL decimal,
     O_ENTRY_ID timestamp,
     PRIMARY KEY (O_W_ID, O_D_ID, O_ID)
+);
+
+CREATE TABLE IF NOT EXISTS item (
+    I_ID int,
+    I_NAME varchar,
+    I_PRICE decimal,
+    I_IM_ID int,
+    I_DATA varchar,
+    PRIMARY KEY I_ID
 );
 
 CREATE TABLE IF NOT EXISTS order_line (
@@ -85,14 +94,6 @@ CREATE TABLE IF NOT EXISTS order_line (
     PRIMARY KEY (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER)
 );
 
-CREATE TABLE IF NOT EXISTS item (
-    I_ID int,
-    I_NAME varchar,
-    I_PRICE decimal,
-    I_IM_ID int,
-    I_DATA varchar,
-    PRIMARY KEY I_ID
-);
 
 CREATE TABLE IF NOT EXISTS stock (
     S_W_ID int PRIMARY KEY,
