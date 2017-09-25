@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS order_line (
 
 
 CREATE TABLE IF NOT EXISTS stock (
-    S_W_ID int PRIMARY KEY,
+    S_W_ID int,
     S_I_ID int,
     S_QUANTITY decimal,
     S_YTD decimal,
