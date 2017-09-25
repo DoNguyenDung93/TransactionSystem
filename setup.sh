@@ -12,7 +12,7 @@ else
 fi
 
 echo "Replacing null values"
-cp replacenull.sh 4224-project-files/data/
+cp replacenull.sh 4224-project-files/data-files
 cd 4224-project-files/data-files
 ./replacenull.sh
 echo "Done replacing null values"
