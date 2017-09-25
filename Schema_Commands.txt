@@ -6,6 +6,8 @@ CREATE KEYSPACE cs4224 WITH replication = {'class':'SimpleStrategy', 'replicatio
 
 USE cs4224;
 
+//3. Create tables
+
 CREATE TABLE IF NOT EXISTS warehouse (
     W_ID int,
     W_NAME varchar,
@@ -115,6 +117,8 @@ CREATE TABLE IF NOT EXISTS stock (
     S_DATA varchar,
     PRIMARY KEY (S_W_ID, S_I_ID)
 );
+
+//4. Populate tables from CSV files
 
 COPY warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_TAX, W_YTD) FROM './Downloads/4224-project-files/data-files/warehouse.csv';
 
