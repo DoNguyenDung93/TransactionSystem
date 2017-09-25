@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS warehouse (
     W_ZIP varchar,
     W_TAX decimal,
     W_YTD decimal,
-    PRIMARY KEY W_ID
+    PRIMARY KEY (W_ID)
 );
 
 CREATE TABLE IF NOT EXISTS district ( 
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS item (
     I_PRICE decimal,
     I_IM_ID int,
     I_DATA varchar,
-    PRIMARY KEY I_ID
+    PRIMARY KEY (I_ID)
 );
 
 CREATE TABLE IF NOT EXISTS order_line (
