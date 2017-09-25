@@ -36,7 +36,7 @@ CREATE TABLE District (
     PRIMARY KEY (D_W_ID, D_ID) 
 );
 
-CREATE TABLE Customer ( 
+CREATE TABLE Customer (
     C_W_ID int, 
     C_D_ID int, 
     C_ID int, 
@@ -59,6 +59,20 @@ CREATE TABLE Customer (
     C_DELIVERY_CNT int, 
     C_DATA varchar, 
     PRIMARY KEY (C_W_ID, C_D_ID, C_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Orderline (
+    OL_W_ID int,
+    OL_D_ID int,
+    OL_O_ID int,
+    OL_NUMBER int,
+    OL_I_ID int,
+    OL_DELIVERY_D timestamp,
+    OL_AMOUNT decimal,
+    OL_SUPPLY_W_ID int,
+    OL_QUANTITY decimal,
+    OL_DIST_INFO varchar,
+    PRIMARY KEY OL_W_ID
 );
 
 CREATE TABLE IF NOT EXISTS Stock(
