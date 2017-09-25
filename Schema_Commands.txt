@@ -82,6 +82,14 @@ CREATE TABLE IF NOT EXISTS Stock(
     PRIMARY KEY S_W_ID,
 );
 
+CREATE TABLE order_( O_W_ID int, O_D_ID int, O_ID int, O_C_ID int, O_CARRIER_ID int, O_OL_CNT decimal, O_ALL_LOCAL decimal, O_ENTRY_ID timestamp, PRIMARY KEY (O_W_ID, O_D_ID, O_ID));
+
+CREATE TABLE item( I_ID int PRIMARY KEY, I_NAME varchar, I_PRICE decimal, I_IM_ID int, I_DATA varchar);
+
+CREATE TABLE order_line(OL_W_ID int, OL_D_ID int, OL_O_ID int, OL_NUMBER int, OL_I_ID int, OL_DELIVERY_D timestamp, OL_AMOUNT decimal, OL_SUPPLY_W_ID int, OL_QUANTITY decimal, OL_DIST_INFO varchar, PRIMARY KEY (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER));
+
+CREATE TABLE stock( S_W_ID int, S_I_ID int, S_QUANTITY decimal, S_YTD decimal, S_ORDER_CNT int, S_REMOTE_CNT int, S_DIST_01 varchar, S_DIST_02 varchar, S_DIST_03 varchar, S_DIST_04 varchar, S_DIST_05 varchar, S_DIST_06 varchar, S_DIST_07 varchar, S_DIST_08 varchar, S_DIST_09 varchar, S_DIST_10 varchar, S_DATA varchar, PRIMARY KEY (S_W_ID, S_I_ID));
+
 //4. Insert data from CSV into tables
 
 COPY Warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_TAX, W_YTD) FROM './Downloads/4224-project-files/data-files/warehouse.csv';
@@ -89,3 +97,11 @@ COPY Warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_
 COPY District (D_W_ID, D_ID, D_NAME, D_STREET_1, D_STREET_2, D_CITY, D_STATE, D_ZIP, D_TAX, D_YTD, D_NEXT_O_ID) from './Downloads/4224-project-files/data-files/district.csv';
 
 COPY Customer (C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_STREET_2, C_CITY, C_STATE, C_ZIP, C_PHONE, C_SINCE, C_CREDIT, C_CREDIT_LIM, C_DISCOUNT, C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_DELIVERY_CNT, C_DATA) FROM './Downloads/4224-project-files/data-files/customer.csv';
+
+COPY order_( O_W_ID, O_D_ID, O_ID, O_C_ID, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL, O_ENTRY_ID) FROM './Downloads/4224-project-files/data-files/order.csv';
+
+COPY item( I_ID, I_NAME, I_PRICE, I_IM_ID, I_DATA) FROM './Downloads/4224-project-files/data-files/item.csv';
+
+COPY order_line(OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER, OL_I_ID, OL_DELIVERY_D, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, OL_DIST_INFO) FROM './Downloads/4224-project-files/data-files/order-line.csv';
+
+COPY stock(S_W_ID, S_I_ID, S_QUANTITY, S_YTD, S_ORDER_CNT, S_REMOTE_CNT, S_DIST_01, S_DIST_02, S_DIST_03, S_DIST_04, S_DIST_05, S_DIST_06, S_DIST_07, S_DIST_08, S_DIST_09, S_DIST_10) FROM '/Downloads/4224-project-files/data-files/stock.csv';
