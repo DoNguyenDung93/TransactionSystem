@@ -8,7 +8,18 @@ USE cs4224;
 
 3. Creating Tables
 
-CREATE TABLE Warehouse( W_ID int PRIMARY KEY, W_NAME varchar, W_STREET_1 varchar, W_STREET_2 varchar, W_CITY varchar, W_STATE varchar, W_ZIP varchar, W_TAX decimal, W_YTD decimal );
+CREATE TABLE Warehouse (
+    W_ID int,
+    W_NAME varchar,
+    W_STREET_1 varchar,
+    W_STREET_2 varchar,
+    W_CITY varchar,
+    W_STATE varchar,
+    W_ZIP varchar,
+    W_TAX decimal,
+    W_YTD decimal,
+    PRIMARY KEY W_ID
+);
 
 CREATE TABLE District( D_W_ID int, D_ID int, D_NAME varchar, D_STREET_1 varchar, D_STREET_2 varchar, D_CITY varchar, D_STATE varchar, D_ZIP varchar, D_TAX decimal, D_YTD decimal, D_NEXT_O_ID int, PRIMARY KEY (D_W_ID, D_ID) );
 
@@ -31,20 +42,20 @@ COPY Customer (C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_ST
 CREATE TABLE IF NOT EXISTS Stock(
     S_W_ID int PRIMARY KEY,
     S_I_ID int,
-    S_QUANTITY decimal(4,0),
-    S_YTD decimal(8,2),
+    S_QUANTITY decimal,
+    S_YTD decimal,
     S_ORDER_CNT int,
     S_REMOTE_CNT int,
-    S_DIST_01 char(24),
-    S_DIST_02 char(24),
-    S_DIST_03 char(24),
-    S_DIST_04 char(24),
-    S_DIST_05 char(24),
-    S_DIST_06 char(24),
-    S_DIST_07 char(24),
-    S_DIST_08 char(24),
-    S_DIST_09 char(24),
-    S_DIST_10 char(24),
-    S_DATA varchar(20),
+    S_DIST_01 varchar,
+    S_DIST_02 varchar,
+    S_DIST_03 varchar,
+    S_DIST_04 varchar,
+    S_DIST_05 varchar,
+    S_DIST_06 varchar,
+    S_DIST_07 varchar,
+    S_DIST_08 varchar,
+    S_DIST_09 varchar,
+    S_DIST_10 varchar,
+    S_DATA varchar,
     PRIMARY KEY S_W_ID,
 );
