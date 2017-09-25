@@ -4,6 +4,9 @@
 
 for f in *.csv
 do
-	sed -i -e 's/,null,/,-1,/g' -e 's/^null,/-1,/' -e 's/-1,null,/-1,-1,/g' -e 's/,null$/,-1/' $f
+	sed -i -e 's/,null,/,-1,/g' $f
+	sed -i -e 's/^null,/-1,/' $f
+	sed -i -e 's/-1,null,/-1,-1,/g' $f
+	sed -i -e 's/,null$/,-1/' $f
 done
 
