@@ -8,7 +8,7 @@ USE cs4224;
 
 3. Creating Tables
 
-CREATE TABLE Warehouse (
+CREATE TABLE IF NOT EXISTS Warehouse (
     W_ID int,
     W_NAME varchar,
     W_STREET_1 varchar,
@@ -21,7 +21,7 @@ CREATE TABLE Warehouse (
     PRIMARY KEY W_ID
 );
 
-CREATE TABLE District ( 
+CREATE TABLE IF NOT EXISTS District ( 
     D_W_ID int, 
     D_ID int, 
     D_NAME varchar, 
@@ -36,7 +36,7 @@ CREATE TABLE District (
     PRIMARY KEY (D_W_ID, D_ID) 
 );
 
-CREATE TABLE Customer (
+CREATE TABLE IF NOT EXISTS Customer (
     C_W_ID int, 
     C_D_ID int, 
     C_ID int, 
@@ -75,7 +75,16 @@ CREATE TABLE IF NOT EXISTS Orderline (
     PRIMARY KEY OL_W_ID
 );
 
-CREATE TABLE IF NOT EXISTS Stock(
+CREATE TABLE IF NOT EXISTS Item (
+    I_ID int,
+    I_NAME varchar,
+    I_PRICE decimal,
+    I_IM_ID int,
+    I_DATA varchar,
+    PRIMARY KEY I_ID
+);
+
+CREATE TABLE IF NOT EXISTS Stock (
     S_W_ID int PRIMARY KEY,
     S_I_ID int,
     S_QUANTITY decimal,
