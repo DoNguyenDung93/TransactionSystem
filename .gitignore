@@ -3,6 +3,9 @@
 .AppleDouble
 .LSOverride
 
+# Ignore data file
+4224-project-files/
+
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 # Compiled class file
