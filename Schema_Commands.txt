@@ -1,3 +1,6 @@
+//0. Drop Keyspace if EXISTS
+DROP KEYSPACE IF EXISTS cs4224;
+
 //1. Creating Keyspace
 
 CREATE KEYSPACE cs4224 WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
