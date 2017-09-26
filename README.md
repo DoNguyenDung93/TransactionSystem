@@ -26,3 +26,7 @@ truncate_request_timeout_in_ms: 60000
 # The default timeout for other, miscellaneous operations
 request_timeout_in_ms: 30000
 ```
+
+# Running Transactions
+
+Go into `app` directory and run `python client.py`
