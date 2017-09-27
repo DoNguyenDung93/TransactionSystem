@@ -12,12 +12,6 @@ class StockLevelTransaction(Transaction):
         num_items = self.count_items_below_threshold(w_id, last_l_item_ids, threshold)
         print 'Total Num Items', num_items
 
-
-    def get_next_order_id(self, w_id, d_id):
-        result = self.session\
-            .execute('select d_next_o_id from district where d_w_id = {} and d_id = {}'.format(w_id, d_id))
-        return result[0].d_next_o_id
-
     def get_last_l_item_ids(self, w_id, d_id, next_order_id, num_last_orders):
         results = self.session.execute('select ol_i_id from order_line'
                                   ' where ol_w_id = {} and ol_d_id = {} and ol_o_id >= {}'
