@@ -4,7 +4,10 @@ from StatsCollector import StatsCollector
 from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
+from transactions.DeliveryTransaction import  import DeliveryTransaction
+from transactions.PopularItemTransaction import  PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
+from transactions.TopBalanceTransaction import TopBalanceTransaction
 from transactions.Transaction import Transaction
 
 def run_transactions():
@@ -41,7 +44,7 @@ class Client:
             pass
 
         elif transaction_type == Parser.DELIVERY:
-            pass
+            transaction = DeliveryTransaction(session)
 
         elif transaction_type == Parser.ORDER_STATUS:
             pass
@@ -50,15 +53,15 @@ class Client:
             transaction = StockLevelTransaction(session)
 
         elif transaction_type == Parser.POPULAR_ITEM:
-            pass
+            transaction = PopularItemTransaction(session)
 
         elif transaction_type == Parser.TOP_BALANCE:
-            pass
+            transaction = TopBalanceTransaction(session)
 
         elif transaction_type == Parser.ORDER_LINE:
             pass
 
-        transaction.execute(transaction_params);
+        transaction.execute(transaction_params)
 
 
     """ Initalize necessary objects, read and execute transaction.
@@ -82,8 +85,6 @@ class Client:
 
             # Count transaction
             self.stats_collector.transactions.count()
-
-            print("Line: " + line);
 
             # Parsing transaction
             transaction_type = self.parser.get_transaction_type(line)

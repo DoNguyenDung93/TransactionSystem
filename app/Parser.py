@@ -8,7 +8,7 @@ class Parser():
     STOCK_LEVEL = "S";
     POPULAR_ITEM = "I";
     TOP_BALANCE = "T";
-    ORDER_LINE_TRANSACTION = "L";
+    ORDER_LINE = "L";
 
     # Transaction raw string line separator
     LINE_SEPARATOR = ",";
@@ -39,8 +39,8 @@ class Parser():
             # Extract list of order lines
             orders = []
             for info in extra_infos:
-                order = parse(info, transaction_type = "L")
-                orders.add(order);
+                order = parse(info, transaction_type = ORDER_LINE)
+                orders.append(order);
             return {"c_id" : tokens[1],
                     "w_id" : tokens[2],
                     "d_id" : tokens[3],
