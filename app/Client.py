@@ -5,6 +5,7 @@ from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
+from transactions.TopBalanceTransaction import TopBalanceTransaction
 from transactions.Transaction import Transaction
 
 def run_transactions():
@@ -53,7 +54,7 @@ class Client:
             pass
 
         elif transaction_type == Parser.TOP_BALANCE:
-            pass
+            transaction = TopBalanceTransaction(session)
 
         elif transaction_type == Parser.ORDER_LINE:
             pass
@@ -82,8 +83,6 @@ class Client:
 
             # Count transaction
             self.stats_collector.transactions.count()
-
-            print("Line: " + line);
 
             # Parsing transaction
             transaction_type = self.parser.get_transaction_type(line)
