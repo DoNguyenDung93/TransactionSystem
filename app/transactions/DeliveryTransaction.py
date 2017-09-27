@@ -1,5 +1,5 @@
-import Transaction.Transaction
-import datetime
+import Transaction
+from datetime import datetime
 
 # Delivery Transaction (Transaction #3)
 # This transaction is used to process the delivery of the oldest yet-to-be-delivered order for each of the 10
@@ -42,8 +42,9 @@ class DeliveryTransaction(Transaction):
 
     # Update all the order-line in the order by setting OL_DELIVERY_D to the current date and time
     def update_order_line(self, smallest_order_number):
+        time = datetime.utcnow()
         self.session.execute('update order_line set ol_delivery_d = {} where ol_o_id = {}'
-                             .format(str(datetime.datetime.now()), smallest_order_number))
+                             .format(time.strftime('%Y-%m-%d %H:%M:%S'), smallest_order_number))
 
     # Get the sum of value of all the items in the order
     def get_order_sum(self, smallest_order_number):

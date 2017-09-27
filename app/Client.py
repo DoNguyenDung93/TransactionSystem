@@ -4,8 +4,8 @@ from StatsCollector import StatsCollector
 from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
-from transactions.DeliveryTransaction import  import DeliveryTransaction
-from transactions.PopularItemTransaction import  PopularItemTransaction
+from transactions.DeliveryTransaction import DeliveryTransaction
+from transactions.PopularItemTransaction import PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
 from transactions.TopBalanceTransaction import TopBalanceTransaction
 from transactions.Transaction import Transaction
