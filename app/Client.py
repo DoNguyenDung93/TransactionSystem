@@ -5,19 +5,18 @@ from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
 from transactions.DeliveryTransaction import DeliveryTransaction
+from transactions.OrderStatusTransaction import OrderStatusTransaction
 from transactions.PopularItemTransaction import PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
 from transactions.TopBalanceTransaction import TopBalanceTransaction
-from transactions.Transaction import Transaction
 
 def run_transactions():
     cluster = Cluster()
     session = cluster.connect('cs4224')
-    dummy_transaction = StockLevelTransaction(session)
+    dummy_transaction = PopularItemTransaction(session)
     dummy_transaction.execute({
         'w_id': 1,
         'd_id': 2,
-        't': 400,
         'l': 3
     })
 
@@ -47,7 +46,7 @@ class Client:
             transaction = DeliveryTransaction(session)
 
         elif transaction_type == Parser.ORDER_STATUS:
-            pass
+            transaction = OrderStatusTransaction(session)
 
         elif transaction_type == Parser.STOCK_LEVEL:
             transaction = StockLevelTransaction(session)
@@ -69,7 +68,7 @@ class Client:
     def execute(self):
         # Connect to cassandra server
         cluster = Cluster()
-        session = cluster.connect('cs4224');
+        session = cluster.connect('cs4224')
 
         # Reading transactions line by line, parsing and execute
         while True:
