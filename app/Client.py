@@ -93,7 +93,7 @@ class Client:
             extra_lines = []
             for i in range(extra_line_cnt):
                 extra_line = sys.stdin.readline().strip()
-                extra_lines.add(extra_line)
+                extra_lines.append(extra_line)
             transaction_params = self.parser.parse(line, transaction_type, extra_lines)
 
             # Execute transaction and measure time
