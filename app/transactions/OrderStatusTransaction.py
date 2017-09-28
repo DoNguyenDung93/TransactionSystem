@@ -39,12 +39,6 @@ class OrderStatusTransaction(Transaction):
             ' has balance of ', customer_balance
         print 'Last order info: ', order_number, entry_date, carrier
 
-    # Get the customer info using C_ID
-    def get_customer_info(self, c_w_id, c_d_id, c_id):
-        result = self.session.execute('select c_first, c_middle, c_last, c_balance from customer where'
-                                      ' c_w_id = {}, c_d_id = {}, c_id = {}'.format(c_w_id, c_d_id, c_id))
-        return result[0]
-
     # Get the last order info from the customer
     def get_last_order(self, c_w_id, c_d_id, c_id):
         result = self.session.execute('select o_id, o_entry_d, o_carrier_id from order_ where'
