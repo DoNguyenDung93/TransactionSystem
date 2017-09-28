@@ -1,17 +1,17 @@
 class Parser():
 
     # Transaction type string values
-    NEW_ORDER = "N";
-    PAYMENT = "P";
-    DELIVERY = "D";
-    ORDER_STATUS = "O";
-    STOCK_LEVEL = "S";
-    POPULAR_ITEM = "I";
-    TOP_BALANCE = "T";
-    ORDER_LINE = "L";
+    NEW_ORDER = "N"
+    PAYMENT = "P"
+    DELIVERY = "D"
+    ORDER_STATUS = "O"
+    STOCK_LEVEL = "S"
+    POPULAR_ITEM = "I"
+    TOP_BALANCE = "T"
+    ORDER_LINE = "L"
 
     # Transaction raw string line separator
-    LINE_SEPARATOR = ",";
+    LINE_SEPARATOR = ","
 
     def __init__(self):
         pass
@@ -33,7 +33,7 @@ class Parser():
 
         # Transaction type can be given by user or extracted from tokens
         if not transaction_type:
-            transaction_type = tokens[0];
+            transaction_type = tokens[0]
 
         if transaction_type == Parser.NEW_ORDER:
             # Extract list of order lines
