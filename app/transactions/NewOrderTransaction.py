@@ -1,4 +1,5 @@
 from Transaction import Transaction
+from datetime import datetime
 
 class NewOrderTransaction(Transaction):
 
@@ -7,3 +8,87 @@ class NewOrderTransaction(Transaction):
 		d_id = params['d_id']
 		c_id = params['c_id']
 		num_items = params['num_items']
+		orders = params['items']
+
+		n = self.get_d_next_o_id(w_id, d_id)
+		d_tax = self.session.execute('SELECT d_tax FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
+		w_tax = self.session.execute('SELECT w_tax FROM warehouse WHERE w_id = {}'.format(w_id))
+		c_discount = self.session.execute('SELECT c_discount FROM customer WHERE c_id = {}'.format(c_id))
+		self.update_d_next_o_id(w_id, d_id)
+		entry_date = self.create_new_order(w_id, d_id, c_id, n, num_items, orders)
+		total_amount = 0
+		print_item_results = self.update_stock_and_create_order_line(w_id, d_id, c_id, n, total_amount, orders, d_tax, w_tax, c_discount)
+		self.print_output(w_id, d_id, c_id, w_tax, d_tax, n, entry_date, num_items, total_amount)
+		self.print_items(print_item_results)
+
+	def get_d_next_o_id(self, w_id, d_id):
+		result = self.session.execute('select d_next_o_id from district where d_id = {} and d_w_id = {}'.format(d_id, w_id))
+		return result
+
+	def update_d_next_o_id(self, w_id, d_id):
+		self.session.execute('UPDATE district SET d_next_o_id = d_next_o_id + 1 WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
+
+	def get_all_local(self, w_id, orders):
+		for (_, supply_warehouse_id, _) in orders:
+			if w_id != supply_warehouse_id:
+				return  0
+		return 1
+
+	def create_new_order(self, w_id, d_id, c_id, n, num_items, orders):
+		all_local = self.get_all_local(w_id, orders)
+		time = datetime.utcnow()
+		self.session.execute('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_id) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'.format(w_id, d_id, n, c_id, 0, num_items, all_local, time.strftime('%Y-%m-%d %H:%M:%S')))
+		return time
+
+	def update_stock_and_create_order_line(self, w_id, d_id, c_id, n, total_amount, orders, d_tax, w_tax, c_discount):
+		result = []
+		for index, (item_number, supplier_warehouse, quantity) in enumerate(orders):
+			item_result = []
+			item_result.append(item_number)
+			s_quantity = self.session.execute('SELECT s_quantity IN stock WHERE s_w_id = {} AND s_i_id = {}'.format(supplier_warehouse, item_number))
+			adjusted_qty = s_quantity - quantity
+			if adjusted_qty < 10:
+				adjusted_qty += 100
+			prepared_query = self.session.prepare('UPDATE stock SET s_quantity = ?, s_ytd = s_ytd + ?, s_order_cnt = s_order_cnt + 1, s_remote_cnt = s_remote_cnt + ? WHERE s_w_id = ? AND s_i_id = ?')
+			if supplier_warehouse != w_id:
+				counter = 1
+			else:
+				counter = 0
+			bound_query = prepared_query.bind(adjusted_qty, quantity, counter, supplier_warehouse, item_number)
+			self.session.execute(bound_query)
+			item = self.session.execute('SELECT i_price, i_name FROM item WHERE i_id = {}'.format(item_number))
+			item_result.append(item.i_name)
+			item_result.append(supplier_warehouse)
+			item_result.append(quantity)
+			item_amount = quantity * item.i_price
+			item_result.append(item_amount)
+			item_result.append(s_quantity)
+			total_amount = total_amount + item_amount
+			prepared_query = self.session.prepare('INSERT INTO order-line(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+			bound_query = prepared_query.bind(w_id, d_id, n, index, item_number, None, item_amount, supplier_warehouse, quantity, 'S_DIST'+str(d_id))
+			self.session.execute(bound_query)
+			result.append(item_result)
+
+		total_amount = total_amount * (1 + d_tax + w_tax) * (1 - c_discount)
+		return result
+
+	def print_output(self, w_id, d_id, c_id, w_tax, d_tax, o_id, entry_date, num_items, total_amount):
+		customer_info = self.get_customer_info(w_id, d_id, c_id)
+		print "Customer:		{} {} {}".format(customer_info.c_first, customer_info.c_middle, customer_info.c_last)
+		print "Credit:		{} with limit {}".format(customer_info.c_credit, customer_info.c_credit_lim)
+		print "Discount:		{}".format(customer_info.c_discount)
+		print "Warehouse tax:		{}".format(w_tax)
+		print "District tax:		{}".format(d_tax)
+		print "Order number:		{}".format(o_id)
+		print "Entry date:		{}".format(entry_date)
+		print "Number of items:		{}".format(num_items)
+		print "Total amount:		{}".format(total_amount)
+
+	def print_items(self, items):
+		for (item_num, i_name, supplier_warehouse, quantity, ol_amount, s_quantity) in items:
+			print "Item number:		{}".format(item_num)
+			print "Item name:		{}".format(i_name)
+			print "Supplier warehouse:		{}".format(supplier_warehouse)
+			print "Quantity:		{}".format(quantity)
+			print "OL_amount:		{}".format(ol_amount)
+			print "s_quantity:		{}".format(s_quantity)

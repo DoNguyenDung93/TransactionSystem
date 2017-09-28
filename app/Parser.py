@@ -18,7 +18,7 @@ class Parser():
 
     def get_transaction_type(self, line):
         # Split line into tokens
-        return line.split(Parser.LINE_SEPARATOR)[0];
+        return line.split(Parser.LINE_SEPARATOR)[0]
 
     def get_transaction_extra_line_count(self, transaction_type, line):
         if transaction_type == Parser.NEW_ORDER:
@@ -39,11 +39,12 @@ class Parser():
             # Extract list of order lines
             orders = []
             for info in extra_infos:
-                order = parse(info, transaction_type = ORDER_LINE)
-                orders.append(order);
+                order = info.split(Parser.LINE_SEPARATOR)
+                orders.append(order)
             return {"c_id" : tokens[1],
                     "w_id" : tokens[2],
                     "d_id" : tokens[3],
+                    "num_items" : tokens[4],
                     "items": orders}
 
         elif transaction_type == Parser.PAYMENT:
