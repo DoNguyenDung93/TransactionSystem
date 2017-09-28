@@ -4,6 +4,8 @@ from StatsCollector import StatsCollector
 from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
+from transactions.NewOrderTransaction import NewOrderTransaction
+from transactions.PaymentTransaction import PaymentTransaction
 from transactions.DeliveryTransaction import DeliveryTransaction
 from transactions.OrderStatusTransaction import OrderStatusTransaction
 from transactions.PopularItemTransaction import PopularItemTransaction
@@ -37,10 +39,10 @@ class Client:
         transaction = DummyTransaction(session)
 
         if transaction_type == Parser.NEW_ORDER:
-            pass
+            transaction = NewOrderTransaction(session)
 
         elif transaction_type == Parser.PAYMENT:
-            pass
+            transaction = PaymentTransaction(session)
 
         elif transaction_type == Parser.DELIVERY:
             transaction = DeliveryTransaction(session)
@@ -112,4 +114,4 @@ class Client:
 
 if __name__ == "__main__":
     client = Client()
-    client.execute();
+    client.execute()
