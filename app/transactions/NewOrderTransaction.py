@@ -4,21 +4,24 @@ from datetime import datetime
 class NewOrderTransaction(Transaction):
 
 	def execute(self, params):
+		# inputs
 		w_id = params['w_id']
 		d_id = params['d_id']
 		c_id = params['c_id']
 		num_items = params['num_items']
 		orders = params['items']
 
-		n = self.get_d_next_o_id(w_id, d_id)
+		# intermediate data
 		d_tax = self.session.execute('SELECT d_tax FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
 		w_tax = self.session.execute('SELECT w_tax FROM warehouse WHERE w_id = {}'.format(w_id))
 		c_discount = self.session.execute('SELECT c_discount FROM customer WHERE c_id = {}'.format(c_id))
+
+		# processing steps
+		next_o_id = self.get_d_next_o_id(w_id, d_id)
 		self.update_d_next_o_id(w_id, d_id)
-		entry_date = self.create_new_order(w_id, d_id, c_id, n, num_items, orders)
-		total_amount = 0
-		print_item_results = self.update_stock_and_create_order_line(w_id, d_id, c_id, n, total_amount, orders, d_tax, w_tax, c_discount)
-		self.print_output(w_id, d_id, c_id, w_tax, d_tax, n, entry_date, num_items, total_amount)
+		entry_date = self.create_new_order(w_id, d_id, c_id, next_o_id, num_items, orders)
+		print_item_results, total_amount = self.update_stock_and_create_order_line(w_id, d_id, c_id, next_o_id, orders, d_tax, w_tax, c_discount)
+		self.print_output(w_id, d_id, c_id, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
 		self.print_items(print_item_results)
 
 	def get_d_next_o_id(self, w_id, d_id):
@@ -37,10 +40,11 @@ class NewOrderTransaction(Transaction):
 	def create_new_order(self, w_id, d_id, c_id, n, num_items, orders):
 		all_local = self.get_all_local(w_id, orders)
 		time = datetime.utcnow()
-		self.session.execute('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_id) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'.format(w_id, d_id, n, c_id, 0, num_items, all_local, time.strftime('%Y-%m-%d %H:%M:%S')))
+		self.session.execute('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_id) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'.format(w_id, d_id, n, c_id, None, num_items, all_local, time.strftime('%Y-%m-%d %H:%M:%S')))
 		return time
 
-	def update_stock_and_create_order_line(self, w_id, d_id, c_id, n, total_amount, orders, d_tax, w_tax, c_discount):
+	def update_stock_and_create_order_line(self, w_id, d_id, c_id, n, orders, d_tax, w_tax, c_discount):
+		total_amount = 0
 		result = []
 		for index, (item_number, supplier_warehouse, quantity) in enumerate(orders):
 			item_result = []
@@ -70,7 +74,7 @@ class NewOrderTransaction(Transaction):
 			result.append(item_result)
 
 		total_amount = total_amount * (1 + d_tax + w_tax) * (1 - c_discount)
-		return result
+		return result, total_amount
 
 	def print_output(self, w_id, d_id, c_id, w_tax, d_tax, o_id, entry_date, num_items, total_amount):
 		customer_info = self.get_customer_info(w_id, d_id, c_id)
@@ -86,6 +90,7 @@ class NewOrderTransaction(Transaction):
 
 	def print_items(self, items):
 		for (item_num, i_name, supplier_warehouse, quantity, ol_amount, s_quantity) in items:
+			print
 			print "Item number:		{}".format(item_num)
 			print "Item name:		{}".format(i_name)
 			print "Supplier warehouse:		{}".format(supplier_warehouse)

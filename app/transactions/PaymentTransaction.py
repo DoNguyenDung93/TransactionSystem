@@ -3,11 +3,13 @@ from Transaction import Transaction
 class PaymentTransaction(Transaction):
 
 	def execute(self, params):
+		# inputs
 		c_w_id = params['c_w_id']
 		c_d_id = params['c_d_id']
 		c_id = params['c_id']
 		payment = params['payment']
 
+		# processing steps
 		self.update_warehouse(c_w_id, payment)
 		self.update_district(c_w_id, c_d_id, payment)
 		self.update_customer(c_w_id, c_d_id, c_id, payment)
