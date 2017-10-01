@@ -1,4 +1,10 @@
+
+
 # TransactionSystem
+
+### Requirements
+
+Python 2.7, Cassandra 3.11, Pip
 
 ### Getting started
 
@@ -27,6 +33,8 @@ truncate_request_timeout_in_ms: 60000
 request_timeout_in_ms: 30000
 ```
 
+Install the Python dependencies with `pip install -r requirements.txt`
+
 # Running Transactions
 
-Go into `app` directory and run `python client.py`
+Go into `app` directory and run `python Client.py`

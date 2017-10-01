@@ -1,10 +1,11 @@
 from Transaction import Transaction
 
 class PopularItemTransaction(Transaction):
+
     def execute(self, params):
-        w_id = params['w_id']
-        d_id = params['d_id']
-        num_last_orders = params['l']
+        w_id = int(params['w_id'])
+        d_id = int(params['d_id'])
+        num_last_orders = int(params['l'])
 
         next_order_id = self.get_next_order_id(w_id, d_id)
         last_l_orders = self.get_last_l_orders(w_id, d_id, next_order_id, num_last_orders)
@@ -17,13 +18,18 @@ class PopularItemTransaction(Transaction):
         self.print_order_info(w_id, d_id, last_l_orders, popular_items_with_quantity, item_ids_names)
         self.print_popular_items_info(popular_items_with_quantity, item_ids_names)
 
-
+    """list((any, any, any)): list of last orders, where each order has o_id, o_entry & o_c_id
+     Get the last num_last_orders orders belonging to a (warehouse_id, district_id) 
+    """
     def get_last_l_orders(self, w_id, d_id, next_order_id, num_last_orders):
         results = self.session.execute('select o_id, o_entry_id, o_c_id from order_'
                                   ' where o_w_id = {} and o_d_id = {} and o_id >= {}'
                                   .format(w_id, d_id, next_order_id - num_last_orders))
         return list(results)
 
+    """list(list((any, any)): list of order lines for each order. Each orderline has ol_quantity & ol_i_id
+     Return the list of order lines for each order in a list of order a particular warehouse id
+    """
     def get_orderlines_for_orders(self, w_id, d_id, orders):
         prepared_query = self.session.prepare('select ol_quantity, ol_i_id from order_line'
                                               ' where ol_w_id = {} and ol_d_id = {}'
@@ -39,6 +45,9 @@ class PopularItemTransaction(Transaction):
 
         return orderlines_for_orders
 
+    """list((set(int), int)): List of (set of pupular item, quantity) tuple
+     Get the popular items and their quantity for each order, using the list of order lines for each order
+    """
     def get_popular_items_with_quantity(self, orderlines_list):
         def get_popular_items_for_orderlines(orderlines):
             max_quantity = max(map(lambda ol: ol.ol_quantity, orderlines))
@@ -46,6 +55,9 @@ class PopularItemTransaction(Transaction):
             return (set(popular_items), max_quantity)
         return map(get_popular_items_for_orderlines, orderlines_list)
 
+    """dict(int, string): mapping for item id to name
+     Get the mapping of item id to name using the list of (set of pupular item, quantity) tuple
+    """
     def get_items_names(self, items_with_quantity):
         item_ids_list = map(lambda lst: lst[0], items_with_quantity)
         distinct_item_ids = set([i_id for sublist in item_ids_list for i_id in sublist])
@@ -61,6 +73,9 @@ class PopularItemTransaction(Transaction):
 
         return item_id_name
 
+    """
+     Print order info
+    """
     def print_order_info(self, w_id, d_id, orders, popular_items_with_quantity, item_ids_name):
         print
         prepared_query = self.session.prepare('select c_first, c_middle, c_last from customer'
@@ -81,6 +96,9 @@ class PopularItemTransaction(Transaction):
 
             print
 
+    """
+     Print popular item info
+    """
     def print_popular_items_info(self, popular_items_with_quantity, item_ids_name):
         print
         num_orders = float(len(popular_items_with_quantity))

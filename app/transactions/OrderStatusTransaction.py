@@ -1,4 +1,4 @@
-import Transaction
+from Transaction import Transaction
 from datetime import datetime
 
 # Order Status Transaction (Transaction #4)
@@ -6,9 +6,9 @@ from datetime import datetime
 
 class OrderStatusTransaction(Transaction):
     def execute(self, params):
-        c_w_id = params['c_w_id']
-        c_d_id = params['c_d_id']
-        c_id = params['c_id']
+        c_w_id = int(params['c_w_id'])
+        c_d_id = int(params['c_d_id'])
+        c_id = int(params['c_id'])
 
         customer_info = self.get_customer_info(c_w_id, c_d_id, c_id)
         customer_name_first = customer_info.c_first
@@ -39,16 +39,19 @@ class OrderStatusTransaction(Transaction):
             ' has balance of ', customer_balance
         print 'Last order info: ', order_number, entry_date, carrier
 
+<<<<<<< HEAD
     # Get the customer info using C_ID
     def get_customer_info(self, c_w_id, c_d_id, c_id):
         result = self.session.execute('select c_first, c_middle, c_last, c_balance from customer where'
-                                      ' c_w_id = {}, c_d_id = {}, c_id = {}'.format(c_w_id, c_d_id, c_id))
+                                      ' c_w_id = {} and c_d_id = {} and c_id = {}'.format(c_w_id, c_d_id, c_id))
         return result[0]
 
+=======
+>>>>>>> 3d35c9f88f57a1e01579e6388bdf46309830cc0a
     # Get the last order info from the customer
     def get_last_order(self, c_w_id, c_d_id, c_id):
         result = self.session.execute('select o_id, o_entry_d, o_carrier_id from order_ where'
-                                      ' o_w_id = {}, o_d_id = {}, o_c_id = {}'.format(c_w_id, c_d_id, c_id))
+                                      ' o_w_id = {} and o_d_id = {} and o_c_id = {}'.format(c_w_id, c_d_id, c_id))
         latest_time = datetime.strptime(result[0].o_entry_d, '%Y-%m-%d %H-%M-%S')
         latest_order = 0
         for index in range(len(result)):
@@ -62,7 +65,7 @@ class OrderStatusTransaction(Transaction):
     # Get info of each item in the latest order
     def get_order_line(self, c_w_id, c_d_id, o_id):
         result = self.session.execute('select ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d'
-                                      ' from order_line where ol_w_id ={}, ol_d_id = {}, ol_o_id = {}'
+                                      ' from order_line where ol_w_id ={} and ol_d_id = {} and ol_o_id = {}'
                                       .format(c_w_id, c_d_id, o_id))
         return result
 

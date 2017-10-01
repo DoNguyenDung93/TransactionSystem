@@ -1,4 +1,4 @@
-import Transaction
+from Transaction import Transaction
 from datetime import datetime
 
 # Delivery Transaction (Transaction #3)
@@ -7,8 +7,8 @@ from datetime import datetime
 
 class DeliveryTransaction(Transaction):
     def execute(self, params):
-        w_id = params['w_id']
-        carrier_id = params['carrier_id']
+        w_id = int(params['w_id'])
+        carrier_id = int(params['carrier_id'])
 
         for num in range(1, 10):
             smallest_order_number = self.get_smallest_order_number(w_id, num)
@@ -23,7 +23,7 @@ class DeliveryTransaction(Transaction):
     # and O_CARRIER_ID = null
     def get_smallest_order_number(self, w_id, num):
         result = self.session.execute('select o_id from order_ where o_w_id = {}'
-                                      ' and o_d_id = {} and o_carrier_id = null'.format(w_id, num))
+                                      ' and o_d_id = {} and o_carrier_id = -1'.format(w_id, num))
         smallest_result = result[0].o_id
         for index in range(len(result)):
             if result[index].o_id < smallest_result:

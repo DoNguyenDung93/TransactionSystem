@@ -4,24 +4,13 @@ from StatsCollector import StatsCollector
 from Parser import Parser
 from cassandra.cluster import Cluster
 from transactions.DummyTransaction import DummyTransaction
+from transactions.NewOrderTransaction import NewOrderTransaction
+from transactions.PaymentTransaction import PaymentTransaction
 from transactions.DeliveryTransaction import DeliveryTransaction
+from transactions.OrderStatusTransaction import OrderStatusTransaction
 from transactions.PopularItemTransaction import PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
 from transactions.TopBalanceTransaction import TopBalanceTransaction
-from transactions.Transaction import Transaction
-
-def run_transactions():
-    cluster = Cluster()
-    session = cluster.connect('cs4224')
-    dummy_transaction = StockLevelTransaction(session)
-    dummy_transaction.execute({
-        'w_id': 1,
-        'd_id': 2,
-        't': 400,
-        'l': 3
-    })
-
-run_transactions()
 
 class Client:
 
@@ -38,16 +27,16 @@ class Client:
         transaction = DummyTransaction(session)
 
         if transaction_type == Parser.NEW_ORDER:
-            pass
+            transaction = NewOrderTransaction(session)
 
         elif transaction_type == Parser.PAYMENT:
-            pass
+            transaction = PaymentTransaction(session)
 
         elif transaction_type == Parser.DELIVERY:
             transaction = DeliveryTransaction(session)
 
         elif transaction_type == Parser.ORDER_STATUS:
-            pass
+            transaction = OrderStatusTransaction(session)
 
         elif transaction_type == Parser.STOCK_LEVEL:
             transaction = StockLevelTransaction(session)
@@ -69,7 +58,7 @@ class Client:
     def execute(self):
         # Connect to cassandra server
         cluster = Cluster()
-        session = cluster.connect('cs4224');
+        session = cluster.connect('cs4224')
 
         # Reading transactions line by line, parsing and execute
         while True:
@@ -92,7 +81,7 @@ class Client:
             extra_lines = []
             for i in range(extra_line_cnt):
                 extra_line = sys.stdin.readline().strip()
-                extra_lines.add(extra_line)
+                extra_lines.append(extra_line)
             transaction_params = self.parser.parse(line, transaction_type, extra_lines)
 
             # Execute transaction and measure time
@@ -112,5 +101,6 @@ class Client:
         print "Execution throughput: %s (xact/s)" % (transaction_count * 1.0 / transaction_time)
 
 if __name__ == "__main__":
+    print "Executing client"
     client = Client()
-    client.execute();
+    client.execute()

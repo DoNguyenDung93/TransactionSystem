@@ -1,28 +1,28 @@
 class Parser():
 
     # Transaction type string values
-    NEW_ORDER = "N";
-    PAYMENT = "P";
-    DELIVERY = "D";
-    ORDER_STATUS = "O";
-    STOCK_LEVEL = "S";
-    POPULAR_ITEM = "I";
-    TOP_BALANCE = "T";
-    ORDER_LINE = "L";
+    NEW_ORDER = "N"
+    PAYMENT = "P"
+    DELIVERY = "D"
+    ORDER_STATUS = "O"
+    STOCK_LEVEL = "S"
+    POPULAR_ITEM = "I"
+    TOP_BALANCE = "T"
+    ORDER_LINE = "L"
 
     # Transaction raw string line separator
-    LINE_SEPARATOR = ",";
+    LINE_SEPARATOR = ","
 
     def __init__(self):
         pass
 
     def get_transaction_type(self, line):
         # Split line into tokens
-        return line.split(Parser.LINE_SEPARATOR)[0];
+        return line.split(Parser.LINE_SEPARATOR)[0]
 
     def get_transaction_extra_line_count(self, transaction_type, line):
         if transaction_type == Parser.NEW_ORDER:
-            line.split(Parser.LINE_SEPARATOR)[-1]
+            return int(line.split(Parser.LINE_SEPARATOR)[-1])
         else:
             return 0
 
@@ -33,17 +33,18 @@ class Parser():
 
         # Transaction type can be given by user or extracted from tokens
         if not transaction_type:
-            transaction_type = tokens[0];
+            transaction_type = tokens[0]
 
         if transaction_type == Parser.NEW_ORDER:
             # Extract list of order lines
             orders = []
             for info in extra_infos:
-                order = parse(info, transaction_type = ORDER_LINE)
-                orders.append(order);
+                order = info.split(Parser.LINE_SEPARATOR)
+                orders.append(order)
             return {"c_id" : tokens[1],
                     "w_id" : tokens[2],
                     "d_id" : tokens[3],
+                    "num_items" : tokens[4],
                     "items": orders}
 
         elif transaction_type == Parser.PAYMENT:
