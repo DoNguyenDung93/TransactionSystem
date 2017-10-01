@@ -10,7 +10,7 @@ class NewOrderTransaction(Transaction):
 		d_id = int(params['d_id'])
 		c_id = int(params['c_id'])
 		num_items = int(params['num_items'])
-		orders = map(int, params['items'])
+		orders = map(lambda ol: map(int, ol), params['items'])
 
 		# intermediate data
 		d_tax = self.session.execute('SELECT d_tax FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
