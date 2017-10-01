@@ -23,7 +23,7 @@ class DeliveryTransaction(Transaction):
     # and O_CARRIER_ID = null
     def get_smallest_order_number(self, w_id, num):
         result = self.session.execute('select o_id from order_ where o_w_id = {}'
-                                      ' and o_d_id = {} and o_carrier_id = -1'.format(w_id, num))
+                                      ' and o_d_id = {} and o_carrier_id = -1 allow filtering'.format(w_id, num))
         smallest_result = result[0].o_id
         for index in range(len(result)):
             if result[index].o_id < smallest_result:
