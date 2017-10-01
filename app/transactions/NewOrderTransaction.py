@@ -6,11 +6,11 @@ class NewOrderTransaction(Transaction):
 
 	def execute(self, params):
 		# inputs
-		w_id = params['w_id']
-		d_id = params['d_id']
-		c_id = params['c_id']
-		num_items = params['num_items']
-		orders = params['items']
+		w_id = int(params['w_id'])
+		d_id = int(params['d_id'])
+		c_id = int(params['c_id'])
+		num_items = int(params['num_items'])
+		orders = int(params['items'])
 
 		# intermediate data
 		d_tax = self.session.execute('SELECT d_tax FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
@@ -60,7 +60,7 @@ class NewOrderTransaction(Transaction):
 			item_result.append(item_number)
 			row = self.session.execute('SELECT s_quantity, s_ytd, s_order_cnt, s_remote_cnt FROM stock WHERE s_w_id = {} AND s_i_id = {}'.format(int(supplier_warehouse), int(item_number)))
 			row = row[0]
-			adjusted_qty = row.s_quantity - quantity
+			adjusted_qty = int(row.s_quantity) - quantity
 			if adjusted_qty < 10:
 				adjusted_qty += 100
 			new_s_ytd = row.s_ytd + quantity

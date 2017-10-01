@@ -7,8 +7,8 @@ from datetime import datetime
 
 class DeliveryTransaction(Transaction):
     def execute(self, params):
-        w_id = params['w_id']
-        carrier_id = params['carrier_id']
+        w_id = int(params['w_id'])
+        carrier_id = int(params['carrier_id'])
 
         for num in range(1, 10):
             smallest_order_number = self.get_smallest_order_number(w_id, num)

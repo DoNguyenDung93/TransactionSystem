@@ -6,9 +6,9 @@ from datetime import datetime
 
 class OrderStatusTransaction(Transaction):
     def execute(self, params):
-        c_w_id = params['c_w_id']
-        c_d_id = params['c_d_id']
-        c_id = params['c_id']
+        c_w_id = int(params['c_w_id'])
+        c_d_id = int(params['c_d_id'])
+        c_id = int(params['c_id'])
 
         customer_info = self.get_customer_info(c_w_id, c_d_id, c_id)
         customer_name_first = customer_info.c_first
