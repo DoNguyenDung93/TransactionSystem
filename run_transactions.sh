@@ -8,6 +8,4 @@ fi
 
 touch log.txt
 
-for f in `ls 4224-project-files/xact-files`; do
-    python app/Client.py < "4224-project-files/xact-files/${f}" 2>&1 | tee -a log.txt
-done
+python app/Client.py < `cat 4224-project-files/xact-files/*` 2>&1 | tee -a log.txt
