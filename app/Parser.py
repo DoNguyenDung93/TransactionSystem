@@ -22,7 +22,7 @@ class Parser():
 
     def get_transaction_extra_line_count(self, transaction_type, line):
         if transaction_type == Parser.NEW_ORDER:
-            line.split(Parser.LINE_SEPARATOR)[-1]
+            return int(line.split(Parser.LINE_SEPARATOR)[-1])
         else:
             return 0
 
