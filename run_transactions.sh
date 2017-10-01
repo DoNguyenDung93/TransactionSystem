@@ -8,4 +8,4 @@ fi
 
 touch log.txt
 
-python app/Client.py < `cat 4224-project-files/xact-files/*` 2>&1 | tee -a log.txt
+cat 4224-project-files/xact-files/* | python app/Client.py 2>&1 | tee -a log.txt

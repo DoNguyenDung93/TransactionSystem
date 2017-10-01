@@ -25,7 +25,7 @@ class DeliveryTransaction(Transaction):
         result = self.session.execute('select o_id from order_ where o_w_id = {}'
                                       ' and o_d_id = {} and o_carrier_id = -1 allow filtering'.format(w_id, num))
         smallest_result = result[0].o_id
-        for index in range(len(result)):
+        for index in range(len(list(result))):
             if result[index].o_id < smallest_result:
                 smallest_result = result[index].o_id
         return smallest_result
