@@ -3,10 +3,10 @@ from Transaction import Transaction
 class StockLevelTransaction(Transaction):
 
     def execute(self, params):
-        w_id = params['w_id']
-        d_id = params['d_id']
-        threshold = params['t']
-        num_last_orders = params['l']
+        w_id = int(params['w_id'])
+        d_id = int(params['d_id'])
+        threshold = int(params['t'])
+        num_last_orders = int(params['l'])
 
         next_order_id = self.get_next_order_id(w_id, d_id)
         last_l_item_ids = self.get_last_l_item_ids(w_id, d_id, next_order_id, num_last_orders)
