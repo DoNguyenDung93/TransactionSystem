@@ -12,18 +12,6 @@ from transactions.PopularItemTransaction import PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
 from transactions.TopBalanceTransaction import TopBalanceTransaction
 
-def run_transactions():
-    cluster = Cluster()
-    session = cluster.connect('cs4224')
-    dummy_transaction = PopularItemTransaction(session)
-    dummy_transaction.execute({
-        'w_id': 1,
-        'd_id': 2,
-        'l': 3
-    })
-
-run_transactions()
-
 class Client:
 
     def __init__(self):
@@ -113,5 +101,6 @@ class Client:
         print "Execution throughput: %s (xact/s)" % (transaction_count * 1.0 / transaction_time)
 
 if __name__ == "__main__":
+    print "Executing client"
     client = Client()
     client.execute()
