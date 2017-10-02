@@ -28,7 +28,7 @@ class OrderStatusTransaction(Transaction):
         date_time = []
         order_line = self.get_order_line(c_w_id, c_id, order_number)
 
-        for index in range(len(order_line)):
+        for index in range(len(list(order_line))):
             item_number[index] = order_line[index].ol_i_id
             supply_warehouse[index] = order_line[index].ol_supply_w_id
             quantity[index] = order_line[index].ol_quantity
@@ -51,7 +51,7 @@ class OrderStatusTransaction(Transaction):
                                       ' o_w_id = {} and o_d_id = {} and o_c_id = {}'.format(c_w_id, c_d_id, c_id))
         latest_time = datetime.strptime(result[0].o_entry_d, '%Y-%m-%d %H-%M-%S')
         latest_order = 0
-        for index in range(len(result)):
+        for index in range(len(list(result))):
             time = datetime.strptime(result[index].o_entry_d, '%Y-%m-%d %H-%M-%S')
             if time > latest_time:
                 latest_time = time

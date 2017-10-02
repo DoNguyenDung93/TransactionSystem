@@ -70,7 +70,7 @@ class DeliveryTransaction(Transaction):
     def get_order_sum(self, smallest_order_number, num):
         result = self.session.execute(self.get_order_sum_query.bind(smallest_order_number, num))
         sum_order = 0.0
-        for index in range(len(result)):
+        for index in range(len(list(result))):
             sum_order += result[index].ol_amount
         return sum_order
 
