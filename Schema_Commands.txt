@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS order_(
     O_CARRIER_ID int,
     O_OL_CNT decimal,
     O_ALL_LOCAL decimal,
-    O_ENTRY_ID timestamp,
+    O_ENTRY_D timestamp,
     PRIMARY KEY (O_W_ID, O_D_ID, O_ID)
 );
 
@@ -129,7 +129,7 @@ COPY district (D_W_ID, D_ID, D_NAME, D_STREET_1, D_STREET_2, D_CITY, D_STATE, D_
 
 COPY customer (C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_STREET_2, C_CITY, C_STATE, C_ZIP, C_PHONE, C_SINCE, C_CREDIT, C_CREDIT_LIM, C_DISCOUNT, C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_DELIVERY_CNT, C_DATA) FROM './4224-project-files/data-files/customer.csv';
 
-COPY order_( O_W_ID, O_D_ID, O_ID, O_C_ID, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL, O_ENTRY_ID) FROM './4224-project-files/data-files/order.csv';
+COPY order_( O_W_ID, O_D_ID, O_ID, O_C_ID, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL, O_ENTRY_D) FROM './4224-project-files/data-files/order.csv';
 
 COPY item( I_ID, I_NAME, I_PRICE, I_IM_ID, I_DATA) FROM './4224-project-files/data-files/item.csv';
 
