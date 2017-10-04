@@ -10,6 +10,9 @@ class NewOrderTransaction(Transaction):
 		d_id = int(params['d_id'])
 		c_id = int(params['c_id'])
 		num_items = int(params['num_items'])
+		if (num_items > 20):
+			print "Number of items is greater than 20. Exit"
+			return
 		orders = map(lambda ol: map(int, ol), params['items'])
 
 		# intermediate data
@@ -17,7 +20,7 @@ class NewOrderTransaction(Transaction):
 		d_tax = d_tax[0].d_tax
 		w_tax = self.session.execute('SELECT w_tax FROM warehouse WHERE w_id = {}'.format(w_id))
 		w_tax = w_tax[0].w_tax
-		c_discount = self.session.execute('SELECT c_discount FROM customer WHERE c_w_id = {} and c_d_id = {} and c_id = {}'.format(w_id, d_id, c_id))
+		c_discount = self.session.execute('SELECT c_discount FROM customer WHERE c_w_id = {} AND c_d_id = {} AND c_id = {}'.format(w_id, d_id, c_id))
 		c_discount = c_discount[0].c_discount
 
 		# processing steps
@@ -29,7 +32,7 @@ class NewOrderTransaction(Transaction):
 		self.print_items(print_item_results)
 
 	def get_d_next_o_id(self, w_id, d_id):
-		result = self.session.execute('select d_next_o_id from district where d_id = {} and d_w_id = {}'.format(d_id, w_id))
+		result = self.session.execute('SELECT d_next_o_id FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
 		return result[0].d_next_o_id
 
 	def update_d_next_o_id(self, w_id, d_id):
@@ -46,7 +49,6 @@ class NewOrderTransaction(Transaction):
 	def create_new_order(self, w_id, d_id, c_id, o_id, num_items, orders):
 		all_local = self.get_all_local(w_id, orders)
 		time = datetime.now()
-		# time = time.strftime('%Y-%m-%d %H:%M:%S')
 		prepared_query = self.session.prepare('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
 		bound_query = prepared_query.bind([int(w_id), int(d_id), int(o_id), int(c_id), 0, int(num_items), all_local, time])
 		self.session.execute(bound_query)
@@ -111,4 +113,4 @@ class NewOrderTransaction(Transaction):
 			print "Supplier warehouse:	{}".format(supplier_warehouse)
 			print "Quantity:		{}".format(quantity)
 			print "OL_amount:		{}".format(ol_amount)
-			print "s_quantity:		{}".format(s_quantity)
+			print "S_quantity:		{}".format(s_quantity)
