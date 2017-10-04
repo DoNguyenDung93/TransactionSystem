@@ -34,6 +34,7 @@ class PaymentTransaction(Transaction):
 		self.session.execute('update customer set c_balance = {}, c_ytd_payment = {}, c_payment_cnt = {} where c_id = {} and c_w_id = {} and c_d_id = {}'.format(new_c_balance, new_c_ytd_payment, new_c_payment_cnt, c_id, c_w_id, c_d_id))
 
 	def print_output(self, c_w_id, c_d_id, c_id, payment):
+		print
 		customer_info = self.session.execute('select * from customer where c_w_id = {} and c_d_id = {} and c_id = {}'.format(c_w_id, c_d_id, c_id))
 		customer_info = customer_info[0]
 		print "Customer:		{} {} {}".format(customer_info.c_first, customer_info.c_middle, customer_info.c_last)
