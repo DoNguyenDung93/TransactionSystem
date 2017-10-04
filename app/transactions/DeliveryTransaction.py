@@ -45,7 +45,7 @@ class DeliveryTransaction(Transaction):
 
         for num in range(1, 10):
             smallest_order_number = int(self.get_smallest_order_number(num))
-            print 'smallest_order_number', smallest_order_number
+            # print 'smallest_order_number', smallest_order_number
             customer_id = int(self.find_customer(smallest_order_number, num))
             # print 'customer_id', customer_id
             self.update_order(smallest_order_number, carrier_id, num)

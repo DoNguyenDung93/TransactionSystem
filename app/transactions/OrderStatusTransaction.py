@@ -18,7 +18,7 @@ class OrderStatusTransaction(Transaction):
         customer_balance = customer_info.c_balance
 
         last_order = self.get_last_order(c_w_id, c_d_id, c_id)
-        print last_order
+        # print last_order
         order_number = last_order.o_id
         entry_date = last_order.o_entry_d
         carrier = last_order.o_carrier_id
