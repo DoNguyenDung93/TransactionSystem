@@ -47,7 +47,7 @@ class NewOrderTransaction(Transaction):
 		all_local = self.get_all_local(w_id, orders)
 		time = datetime.now()
 		# time = time.strftime('%Y-%m-%d %H:%M:%S')
-		prepared_query = self.session.prepare('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+		prepared_query = self.session.prepare('INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
 		bound_query = prepared_query.bind([int(w_id), int(d_id), int(o_id), int(c_id), 0, int(num_items), all_local, time])
 		self.session.execute(bound_query)
 		return time

@@ -22,7 +22,7 @@ class PopularItemTransaction(Transaction):
      Get the last num_last_orders orders belonging to a (warehouse_id, district_id) 
     """
     def get_last_l_orders(self, w_id, d_id, next_order_id, num_last_orders):
-        results = self.session.execute('select o_id, o_entry_id, o_c_id from order_'
+        results = self.session.execute('select o_id, o_entry_d, o_c_id from order_'
                                   ' where o_w_id = {} and o_d_id = {} and o_id >= {}'
                                   .format(w_id, d_id, next_order_id - num_last_orders))
         return list(results)
@@ -82,7 +82,7 @@ class PopularItemTransaction(Transaction):
                                               ' where c_w_id = {} and c_d_id = {} and c_id = ?'.format(w_id, d_id))
 
         for (order, (popular_item_ids, quantity)) in zip(orders, popular_items_with_quantity):
-            print 'Order Number {} at {}'.format(order.o_id, order.o_entry_id)
+            print 'Order Number {} at {}'.format(order.o_id, order.o_entry_d)
 
             c_id = int(order.o_c_id)
             bound_query = prepared_query.bind([c_id])
