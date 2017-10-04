@@ -23,11 +23,11 @@ class OrderStatusTransaction(Transaction):
         entry_date = last_order.o_entry_d
         carrier = last_order.o_carrier_id
 
-        item_number = []
-        supply_warehouse = []
-        quantity = []
-        total_price = []
-        date_time = []
+        # item_number = []
+        # supply_warehouse = []
+        # quantity = []
+        # total_price = []
+        # date_time = []
         order_line = self.get_order_line(c_w_id, c_d_id, order_number)
         # print order_line
 
