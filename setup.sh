@@ -19,4 +19,5 @@ echo "Done replacing null values"
 cd ../../
 
 echo "Setting up data for Cassandra"
-cqlsh -f Schema_Commands.txt
+ cqlsh -f Schema_Commands.txt
+#cqlsh -f Schema_Commands_New.txt
