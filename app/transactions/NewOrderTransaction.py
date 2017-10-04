@@ -24,16 +24,12 @@ class NewOrderTransaction(Transaction):
 		c_discount = c_discount[0].c_discount
 
 		# processing steps
-		next_o_id = self.get_d_next_o_id(w_id, d_id)
+		next_o_id = self.get_next_order_id(w_id, d_id)
 		self.update_d_next_o_id(w_id, d_id)
 		entry_date = self.create_new_order(w_id, d_id, c_id, next_o_id, num_items, orders)
 		print_item_results, total_amount = self.update_stock_and_create_order_line(w_id, d_id, c_id, next_o_id, orders, d_tax, w_tax, c_discount)
 		self.print_output(w_id, d_id, c_id, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
 		self.print_items(print_item_results)
-
-	def get_d_next_o_id(self, w_id, d_id):
-		result = self.session.execute('SELECT d_next_o_id FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
-		return result[0].d_next_o_id
 
 	def update_d_next_o_id(self, w_id, d_id):
 		row = self.session.execute('SELECT d_next_o_id FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))

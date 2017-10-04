@@ -31,9 +31,9 @@ class PopularItemTransaction(Transaction):
      Return the list of order lines for each order in a list of order a particular warehouse id
     """
     def get_orderlines_for_orders(self, w_id, d_id, orders):
-        prepared_query = self.session.prepare('select ol_quantity, ol_i_id from order_line'
-                                              ' where ol_w_id = {} and ol_d_id = {}'
-                                              ' and ol_o_id = ?'.format(w_id, d_id))
+        prepared_query = self.session.prepare('SELECT ol_quantity, ol_i_id FROM order_line'
+                                              ' WHERE ol_w_id = {} AND ol_d_id = {}'
+                                              ' AND ol_o_id = ?'.format(w_id, d_id))
 
         orderlines_for_orders = []
 
@@ -62,7 +62,7 @@ class PopularItemTransaction(Transaction):
         item_ids_list = map(lambda lst: lst[0], items_with_quantity)
         distinct_item_ids = set([i_id for sublist in item_ids_list for i_id in sublist])
 
-        prepared_query = self.session.prepare('select i_name from item where i_id = ?')
+        prepared_query = self.session.prepare('SELECT i_name FROM item WHERE i_id = ?')
 
         item_id_name = {}
 
@@ -78,8 +78,8 @@ class PopularItemTransaction(Transaction):
     """
     def print_order_info(self, w_id, d_id, orders, popular_items_with_quantity, item_ids_name):
         print
-        prepared_query = self.session.prepare('select c_first, c_middle, c_last from customer'
-                                              ' where c_w_id = {} and c_d_id = {} and c_id = ?'.format(w_id, d_id))
+        prepared_query = self.session.prepare('SELECT c_first, c_middle, c_last FROM customer'
+                                              ' WHERE c_w_id = {} AND c_d_id = {} AND c_id = ?'.format(w_id, d_id))
 
         for (order, (popular_item_ids, quantity)) in zip(orders, popular_items_with_quantity):
             print 'Order Number {} at {}'.format(order.o_id, order.o_entry_d)
