@@ -20,15 +20,16 @@ class NewOrderTransaction(Transaction):
 		d_tax = d_tax[0].d_tax
 		w_tax = self.session.execute('SELECT w_tax FROM warehouse WHERE w_id = {}'.format(w_id))
 		w_tax = w_tax[0].w_tax
-		c_discount = self.session.execute('SELECT c_discount FROM customer WHERE c_w_id = {} AND c_d_id = {} AND c_id = {}'.format(w_id, d_id, c_id))
-		c_discount = c_discount[0].c_discount
+		customer = self.session.execute('SELECT c_first, c_middle, c_last, c_credit, c_credit_lim, c_discount FROM customer WHERE c_w_id = {} AND c_d_id = {} AND c_id = {}'.format(w_id, d_id, c_id))
+		customer = customer[0]
+		c_discount = customer.c_discount
 
 		# processing steps
 		next_o_id = self.get_next_order_id(w_id, d_id)
 		self.update_d_next_o_id(w_id, d_id)
 		entry_date = self.create_new_order(w_id, d_id, c_id, next_o_id, num_items, orders)
 		print_item_results, total_amount = self.update_stock_and_create_order_line(w_id, d_id, c_id, next_o_id, orders, d_tax, w_tax, c_discount)
-		self.print_output(w_id, d_id, c_id, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
+		self.print_output(customer, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
 		self.print_items(print_item_results)
 
 	def update_d_next_o_id(self, w_id, d_id):
@@ -88,12 +89,11 @@ class NewOrderTransaction(Transaction):
 		total_amount = total_amount * (1 + d_tax + w_tax) * (1 - c_discount)
 		return result, total_amount
 
-	def print_output(self, w_id, d_id, c_id, w_tax, d_tax, o_id, entry_date, num_items, total_amount):
-		customer_info = self.session.execute('select * from customer where c_w_id = {} and c_d_id = {} and c_id = {}'.format(w_id, d_id, c_id))
-		customer_info = customer_info[0]
-		print "Customer:		{} {} {}".format(customer_info.c_first, customer_info.c_middle, customer_info.c_last)
-		print "Credit:			{} with limit {}".format(customer_info.c_credit, customer_info.c_credit_lim)
-		print "Discount:		{}".format(customer_info.c_discount)
+	def print_output(self, customer, w_tax, d_tax, o_id, entry_date, num_items, total_amount):
+		print
+		print "Customer:		{} {} {}".format(customer.c_first, customer.c_middle, customer.c_last)
+		print "Credit:			{} with limit {}".format(customer.c_credit, customer.c_credit_lim)
+		print "Discount:		{}".format(customer.c_discount)
 		print "Warehouse tax:		{}".format(w_tax)
 		print "District tax:		{}".format(d_tax)
 		print "Order number:		{}".format(o_id)
