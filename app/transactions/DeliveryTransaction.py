@@ -12,55 +12,39 @@ class DeliveryTransaction(Transaction):
         carrier_id = int(params['carrier_id'])
 
         # Prepared Statements
-        self.get_smallest_order_number_query = self.session.prepare('select o_id from order_ where o_w_id = {} '
+        self.get_smallest_order_number_query = self.session.prepare('select o_id, o_c_id from order_ where o_w_id = {} '
                                                                     'and o_d_id = ?'
                                                                     'and o_carrier_id = -1 limit 1 allow filtering'
                                                                     .format(w_id))
-        self.find_customer_query = self.session.prepare('select o_c_id from order_ where o_id = ? '
-                                                        'and o_w_id = {} and o_d_id = ? '
-                                                        'allow filtering'
-                                                        .format(w_id))
         self.update_order_query = self.session.prepare('update order_ set o_carrier_id = ? where o_id = ? '
                                                        'and o_w_id = {} and o_d_id = ?'.format(w_id))
-        self.get_order_line_number_query = self.session.prepare('select ol_number from order_line where '
+        self.get_order_line_number_query = self.session.prepare('select ol_number, ol_amount from order_line where '
                                                                 'ol_o_id = ? and ol_w_id = {} and ol_d_id = ?'
                                                                 .format(w_id))
         self.update_order_line_query = self.session.prepare('update order_line set ol_delivery_d = ? where ol_o_id = ? '
                                                             'and ol_w_id = {} and ol_d_id = ? and ol_number = ?'
                                                             .format(w_id))
-        self.get_order_sum_query = self.session.prepare('select ol_amount from order_line where ol_o_id = ? '
-                                                        'and ol_d_id = ? and ol_w_id = {} allow filtering'
-                                                        .format(w_id))
-        self.get_customer_balance_query = self.session.prepare('select c_balance from customer where '
-                                                               'c_id = ? and c_w_id = {} '
-                                                               'and c_d_id = ?'.format(w_id))
-        self.update_customer_balance_query = self.session.prepare('update customer set c_balance = ? '
-                                                                  'where c_id = ? and c_w_id = {} '
-                                                                  'and c_d_id = ?'.format(w_id))
-        self.get_delivery_count_query = self.session.prepare('select c_delivery_cnt from customer where '
-                                                             'c_id = ? and c_w_id = {} and c_d_id = ?'.format(w_id))
-        self.update_customer_delivery_cnt_query = self.session.prepare('update customer set c_delivery_cnt '
-                                                                       '= ? where c_id = ? '
-                                                                       'and c_w_id = {} and c_d_id = ?'.format(w_id))
+        self.get_customer_balance_delivery_query = self.session.prepare('select c_balance, c_delivery_cnt '
+                                                                        'from customer where c_id = ? and c_w_id = {} '
+                                                                        'and c_d_id = ?'.format(w_id))
+        self.update_customer_balance_delivery_query = self.session.prepare('update customer set c_balance = ?,'
+                                                                           'c_delivery_cnt = ? '
+                                                                           'where c_id = ? and c_w_id = {} '
+                                                                           'and c_d_id = ?'.format(w_id))
 
         for num in range(1, 10):
-            smallest_order_number = int(self.get_smallest_order_number(num))
-            # print 'smallest_order_number', smallest_order_number
-            customer_id = int(self.find_customer(smallest_order_number, num))
-            # print 'customer_id', customer_id
+            order_info = self.get_smallest_order_number(num)
+            smallest_order_number = int(order_info[0])
+            customer_id = int(order_info[1])
             self.update_order(smallest_order_number, carrier_id, num)
-            # ol_number = self.get_order_line_number(smallest_order_number, num)
-            # print 'ol_number', ol_number[0].ol_number
-            # for index in range(len(list(ol_number))):
+            sum_order = decimal.Decimal(0)
             for ol_number in self.get_order_line_number(smallest_order_number, num):
-                # print 'ol_number', ol_number
+                sum_order += ol_number[1]
                 self.update_order_line(smallest_order_number, num, ol_number[0])
-            sum_order = self.get_order_sum(smallest_order_number, num)
-            # print 'sum_order', sum_order
-            current_balance = self.get_customer_balance(customer_id, num)
-            self.update_customer_balance(customer_id, sum_order, num, current_balance)
-            delivery_cnt = self.get_delivery_count(customer_id, num)
-            self.update_customer_delivery_cnt(customer_id, num, delivery_cnt)
+            customer_balance_delivery = self.get_customer_balance_delivery(customer_id, num)
+            delivery_cnt = customer_balance_delivery.c_delivery_cnt
+            current_balance = customer_balance_delivery.c_balance
+            self.update_customer_balance_delivery(customer_id, sum_order, num, current_balance, delivery_cnt)
 
     # Find the order with the smallest O_ID using W_ID and DISTRICT_NO from 1 to 10
     # and O_CARRIER_ID = -1
@@ -70,12 +54,7 @@ class DeliveryTransaction(Transaction):
         # for index in range(len(list(result))):
         #     if result[index].o_id < smallest_result:
         #         smallest_result = result[index].o_id
-        return result[0].o_id
-
-    # Find customer corresponding to the smallest order number
-    def find_customer(self, smallest_order_number, num):
-        result = self.session.execute(self.find_customer_query.bind([smallest_order_number, num]))
-        return result[0].o_c_id
+        return result[0]
 
     # Update the O_CARRIER_ID with CARRIER_ID input
     def update_order(self, smallest_order_number, carrier_id, num):
@@ -89,32 +68,16 @@ class DeliveryTransaction(Transaction):
     def update_order_line(self, smallest_order_number, num, ol_number):
         # time = datetime.utcnow().isoformat(' ')
         self.session.execute(self.update_order_line_query.bind(
-            [datetime.strptime(datetime.utcnow().isoformat(' '), '%Y-%m-%d %H:%M:%S.%f'), smallest_order_number, num, ol_number]))
-
-    # Get the sum of value of all the items in the order
-    def get_order_sum(self, smallest_order_number, num):
-        result = self.session.execute(self.get_order_sum_query.bind([smallest_order_number, num]))
-        # print 'sum_order', result[0].ol_amount
-        sum_order = decimal.Decimal(0)
-        for index in result:
-            # print 'order_sum', index[0]
-            sum_order = sum_order + index[0]
-        return sum_order
+            [datetime.strptime(datetime.utcnow().isoformat(' '), '%Y-%m-%d %H:%M:%S.%f'),
+             smallest_order_number, num, ol_number]))
 
     # Get the current balance of the customer
-    def get_customer_balance(self, customer_id, num):
-        result = self.session.execute(self.get_customer_balance_query.bind([customer_id, num]))
-        return result[0].c_balance
+    def get_customer_balance_delivery(self, customer_id, num):
+        result = self.session.execute(self.get_customer_balance_delivery_query.bind([customer_id, num]))
+        return result[0]
 
     # Increase the current customer balance with the value of the order
-    def update_customer_balance(self, customer_id, sum_order, num, current_balance):
-        self.session.execute(self.update_customer_balance_query.bind([current_balance + sum_order, customer_id, num]))
+    def update_customer_balance_delivery(self, customer_id, sum_order, num, current_balance, delivery_cnt):
+        self.session.execute(self.update_customer_balance_delivery_query.bind([current_balance + sum_order,
+                                                                               delivery_cnt + 1, customer_id, num]))
 
-    # Get the delivery count of the customer
-    def get_delivery_count(self, customer_id, num):
-        result = self.session.execute(self.get_delivery_count_query.bind([customer_id, num]))
-        return result[0].c_delivery_cnt
-
-    # Increase the number of delivery to the customer by 1
-    def update_customer_delivery_cnt(self, customer_id, num, delivery_cnt):
-        self.session.execute(self.update_customer_delivery_cnt_query.bind([delivery_cnt + 1, customer_id, num]))
