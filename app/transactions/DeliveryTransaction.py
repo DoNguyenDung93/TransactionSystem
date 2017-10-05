@@ -34,6 +34,8 @@ class DeliveryTransaction(Transaction):
 
         for num in range(1, 10):
             order_info = self.get_smallest_order_number(num)
+            if order_info is None:
+                continue
             smallest_order_number = int(order_info[0])
             customer_id = int(order_info[1])
             self.update_order(smallest_order_number, carrier_id, num)
