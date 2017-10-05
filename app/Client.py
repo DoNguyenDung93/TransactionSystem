@@ -50,7 +50,10 @@ class Client:
         elif transaction_type == Parser.ORDER_LINE:
             pass
 
-        transaction.execute(transaction_params)
+        try:
+            transaction.execute(transaction_params)
+        except:
+            print "Transaction could not be executed"
 
 
     """ Initalize necessary objects, read and execute transaction.
