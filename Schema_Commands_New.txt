@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS district (
     D_CITY varchar,
     D_STATE varchar,
     D_ZIP varchar,
-    D_TAX decimal,
     D_YTD decimal,
     PRIMARY KEY ((D_W_ID, D_ID))
 );
@@ -48,6 +47,7 @@ CREATE TABLE IF NOT EXISTS district_next_order_id (
     D_W_ID int,
     D_ID int,
     D_NEXT_O_ID int,
+    D_TAX decimal,
     PRIMARY KEY ((D_W_ID, D_ID))
 );
 

@@ -33,9 +33,10 @@ class NewOrderTransaction(Transaction):
 		bound_query = prepared_query.bind([w_id])
 		rows = list(self.session.execute(bound_query))
 		if len(rows) == 0:
+			print "Cannot find any warehouse with w_id {} {} {}".format(w_id)
 			return 0
 		else:
-			return rows[0].w_tax
+			return Decimal(rows[0].w_tax)
 
 	def get_customer_for_output(self, w_id, d_id, c_id):
 		"""Get customer info (c_last, c_credit, c_discount) for printing output"""
@@ -49,8 +50,8 @@ class NewOrderTransaction(Transaction):
 			return rows[0]
 
 	def get_d_next_o_id_and_d_tax(self, w_id, d_id):
-		"""Get d_next_o_id and d_tax from district table"""
-		prepared_query = self.session.prepare('SELECT d_next_o_id, d_tax FROM district WHERE d_w_id = ? AND d_id = ?')
+		"""Get d_next_o_id and d_tax from vertical partition district_next_order_id table"""
+		prepared_query = self.session.prepare('SELECT d_next_o_id, d_tax FROM district_next_order_id WHERE d_w_id = ? AND d_id = ?')
 		bound_query = prepared_query.bind([w_id, d_id])
 		rows = list(self.session.execute(bound_query))
 		if len(rows) == 0:
