@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS ditrict_next_smallest_order_id (
     PRIMARY KEY ((D_W_ID, D_ID))
 );
 
+DROP MATERIALIZED VIEW IF EXISTS customer_balance;
 DROP TABLE IF EXISTS customer;
 CREATE TABLE IF NOT EXISTS customer (
     C_W_ID int,
@@ -87,7 +88,6 @@ CREATE TABLE IF NOT EXISTS customer (
     PRIMARY KEY ((C_W_ID, C_D_ID), C_ID)
 );
 
-DROP MATERIALIZED VIEW IF EXISTS customer_balance;
 CREATE MATERIALIZED VIEW customer_balance AS
     SELECT c_id, c_first, c_middle, c_last, c_balance FROM customer WHERE
     c_id IS NOT NULL AND
