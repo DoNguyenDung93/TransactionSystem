@@ -1,16 +1,14 @@
-//0. Drop Keyspace if EXISTS
-DROP KEYSPACE IF EXISTS cs4224_new;
-
 //1. Creating Keyspace
 
-CREATE KEYSPACE cs4224_new WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+CREATE KEYSPACE IF NOT EXISTS cs4224 WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
 
 //2. Use Keyspace
 
-USE cs4224_new;
+USE cs4224;
 
 //3. Create tables
 
+DROP TABLE IF EXISTS warehouse;
 CREATE TABLE IF NOT EXISTS warehouse (
     W_ID int,
     W_NAME varchar,
@@ -19,11 +17,18 @@ CREATE TABLE IF NOT EXISTS warehouse (
     W_CITY varchar,
     W_STATE varchar,
     W_ZIP varchar,
-    W_TAX decimal,
     W_YTD decimal,
     PRIMARY KEY (W_ID)
 );
 
+DROP TABLE IF EXISTS warehouse_tax;
+CREATE TABLE IF NOT EXISTS warehouse_tax (
+    W_ID int,
+    W_TAX decimal,
+    PRIMARY KEY (W_ID)
+);
+
+DROP TABLE IF EXISTS district;
 CREATE TABLE IF NOT EXISTS district (
     D_W_ID int,
     D_ID int,
@@ -35,10 +40,26 @@ CREATE TABLE IF NOT EXISTS district (
     D_ZIP varchar,
     D_TAX decimal,
     D_YTD decimal,
-    D_NEXT_O_ID int,
-    PRIMARY KEY (D_W_ID, D_ID)
+    PRIMARY KEY ((D_W_ID, D_ID))
 );
 
+DROP TABLE IF EXISTS district_next_order_id;
+CREATE TABLE IF NOT EXISTS district_next_order_id (
+    D_W_ID int,
+    D_ID int,
+    D_NEXT_O_ID int,
+    PRIMARY KEY ((D_W_ID, D_ID))
+);
+
+DROP TABLE IF EXISTS ditrict_next_smallest_order_id;
+CREATE TABLE IF NOT EXISTS ditrict_next_smallest_order_id (
+    D_W_ID int,
+    D_ID int,
+    D_NEXT_SMALLEST_O_ID int,
+    PRIMARY KEY ((D_W_ID, D_ID))
+);
+
+DROP TABLE IF EXISTS customer;
 CREATE TABLE IF NOT EXISTS customer (
     C_W_ID int,
     C_D_ID int,
@@ -61,10 +82,26 @@ CREATE TABLE IF NOT EXISTS customer (
     C_PAYMENT_CNT int,
     C_DELIVERY_CNT int,
     C_DATA varchar,
-    PRIMARY KEY (C_W_ID, C_D_ID, C_ID)
+    W_NAME varchar,
+    D_NAME varchar,
+    PRIMARY KEY ((C_W_ID, C_D_ID), C_ID)
 );
 
-CREATE TABLE IF NOT EXISTS order_(
+DROP MATERIALIZED VIEW IF EXISTS customer_balance;
+CREATE MATERIALIZED VIEW customer_balance AS
+    SELECT c_id, c_first, c_middle, c_last, c_balance FROM customer WHERE
+    c_id IS NOT NULL AND
+    c_w_id IS NOT NULL AND
+    c_d_id IS NOT NULL AND
+    c_first IS NOT NULL AND
+    c_middle IS NOT NULL AND
+    c_last IS NOT NULL AND
+    c_balance IS NOT NULL
+    PRIMARY KEY ((c_w_id, c_d_id), c_balance, c_id)
+    WITH CLUSTERING ORDER BY (c_balance desc);
+
+DROP TABLE IF EXISTS order_;
+CREATE TABLE IF NOT EXISTS order_ (
     O_W_ID int,
     O_D_ID int,
     O_ID int,
@@ -73,9 +110,13 @@ CREATE TABLE IF NOT EXISTS order_(
     O_OL_CNT decimal,
     O_ALL_LOCAL decimal,
     O_ENTRY_D timestamp,
-    PRIMARY KEY (O_W_ID, O_D_ID, O_ID)
+    C_FIRST varchar,
+    C_MIDDLE varchar,
+    C_LAST varchar,
+    PRIMARY KEY ((O_W_ID, O_D_ID), O_ID)
 );
 
+DROP TABLE IF EXISTS item;
 CREATE TABLE IF NOT EXISTS item (
     I_ID int,
     I_NAME varchar,
@@ -85,6 +126,7 @@ CREATE TABLE IF NOT EXISTS item (
     PRIMARY KEY (I_ID)
 );
 
+DROP TABLE IF EXISTS order_line;
 CREATE TABLE IF NOT EXISTS order_line (
     OL_W_ID int,
     OL_D_ID int,
@@ -96,10 +138,11 @@ CREATE TABLE IF NOT EXISTS order_line (
     OL_SUPPLY_W_ID int,
     OL_QUANTITY decimal,
     OL_DIST_INFO varchar,
-    PRIMARY KEY (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER)
+    I_NAME varchar,
+    PRIMARY KEY ((OL_W_ID, OL_D_ID), OL_O_ID, OL_NUMBER)
 );
 
-
+DROP TABLE IF EXISTS stock;
 CREATE TABLE IF NOT EXISTS stock (
     S_W_ID int,
     S_I_ID int,
@@ -118,48 +161,6 @@ CREATE TABLE IF NOT EXISTS stock (
     S_DIST_09 varchar,
     S_DIST_10 varchar,
     S_DATA varchar,
-    PRIMARY KEY (S_W_ID, S_I_ID)
+    I_PRICE decimal,
+    PRIMARY KEY ((S_W_ID, S_I_ID))
 );
-
-//4. Populate tables from CSV files
-
-COPY warehouse (W_ID, W_NAME, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP, W_TAX, W_YTD) FROM './4224-project-files/data-files/warehouse.csv';
-
-COPY district (D_W_ID, D_ID, D_NAME, D_STREET_1, D_STREET_2, D_CITY, D_STATE, D_ZIP, D_TAX, D_YTD, D_NEXT_O_ID) from './4224-project-files/data-files/district.csv';
-
-COPY customer (C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_STREET_2, C_CITY, C_STATE, C_ZIP, C_PHONE, C_SINCE, C_CREDIT, C_CREDIT_LIM, C_DISCOUNT, C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT, C_DELIVERY_CNT, C_DATA) FROM './4224-project-files/data-files/customer.csv';
-
-COPY order_( O_W_ID, O_D_ID, O_ID, O_C_ID, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL, O_ENTRY_D) FROM './4224-project-files/data-files/order.csv';
-
-COPY item( I_ID, I_NAME, I_PRICE, I_IM_ID, I_DATA) FROM './4224-project-files/data-files/item.csv';
-
-COPY order_line(OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER, OL_I_ID, OL_DELIVERY_D, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, OL_DIST_INFO) FROM './4224-project-files/data-files/order-line.csv';
-
-COPY stock(S_W_ID, S_I_ID, S_QUANTITY, S_YTD, S_ORDER_CNT, S_REMOTE_CNT, S_DIST_01, S_DIST_02, S_DIST_03, S_DIST_04, S_DIST_05, S_DIST_06, S_DIST_07, S_DIST_08, S_DIST_09, S_DIST_10, S_DATA) FROM './4224-project-files/data-files/stock.csv';
-
-//5. Using MATERIALIZED to duplicate tables into smaller ones
-
-CREATE MATERIALIZED VIEW customer_info AS
-    SELECT c_id, c_first, c_middle, c_last, c_balance FROM customer WHERE
-    c_id IS NOT NULL AND
-    c_w_id IS NOT NULL AND
-    c_d_id IS NOT NULL AND
-    c_first IS NOT NULL AND
-    c_middle IS NOT NULL AND
-    c_last IS NOT NULL AND
-    c_balance IS NOT NULL
-    PRIMARY KEY (c_id, c_w_id, c_d_id)
-    WITH CLUSTERING ORDER BY (c_id desc);
-
-CREATE MATERIALIZED VIEW order_info AS
-    SELECT o_id, o_entry_d, o_carrier_id FROM order_ WHERE
-    o_id IS NOT NULL AND
-    o_w_id IS NOT NULL AND
-    o_d_id IS NOT NULL AND
-    o_c_id IS NOT NULL AND
-    o_entry_d IS NOT NULL AND
-    o_carrier_id IS NOT NULL
-    PRIMARY KEY (o_id, o_d_id, o_w_id, o_c_id)
-    WITH CLUSTERING ORDER BY (o_id desc);
-
-
