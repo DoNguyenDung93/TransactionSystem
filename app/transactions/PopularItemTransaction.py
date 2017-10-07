@@ -11,27 +11,29 @@ class PopularItemTransaction(Transaction):
         last_l_orders = self.get_last_l_orders(w_id, d_id, next_order_id, num_last_orders)
         orderlines_for_orders = self.get_orderlines_for_orders(w_id, d_id, last_l_orders)
         popular_items_with_quantity = self.get_popular_items_with_quantity(orderlines_for_orders)
-        item_ids_names = self.get_items_names(popular_items_with_quantity)
+        item_ids_names = self.get_items_names(orderlines_for_orders)
 
         print 'District Identifier ({}, {})'.format(w_id, d_id)
         print 'Number of last orders to be examined {}'.format(num_last_orders)
-        self.print_order_info(w_id, d_id, last_l_orders, popular_items_with_quantity, item_ids_names)
+        self.print_order_info(last_l_orders, popular_items_with_quantity, item_ids_names)
         self.print_popular_items_info(popular_items_with_quantity, item_ids_names)
 
-    """list((any, any, any)): list of last orders, where each order has o_id, o_entry & o_c_id
+    """list((any, any, any, any, any, any)): list of last orders, where each order has o_id, o_entry, c_first,
+        c_middle, c_last
      Get the last num_last_orders orders belonging to a (warehouse_id, district_id) 
     """
     def get_last_l_orders(self, w_id, d_id, next_order_id, num_last_orders):
-        results = self.session.execute('select o_id, o_entry_d, o_c_id from order_'
+        results = self.session.execute('select o_id, o_entry_d, c_first, c_middle, c_last from order_'
                                   ' where o_w_id = {} and o_d_id = {} and o_id >= {}'
                                   .format(w_id, d_id, next_order_id - num_last_orders))
         return list(results)
 
-    """list(list((any, any)): list of order lines for each order. Each orderline has ol_quantity & ol_i_id
+    """list(list((any, any, any)): list of order lines for each order. Each orderline has ol_quantity, ol_i_id, ol_i_id, 
+        i_name
      Return the list of order lines for each order in a list of order a particular warehouse id
     """
     def get_orderlines_for_orders(self, w_id, d_id, orders):
-        prepared_query = self.session.prepare('SELECT ol_quantity, ol_i_id FROM order_line'
+        prepared_query = self.session.prepare('SELECT ol_quantity, ol_i_id, ol_i_id, i_name FROM order_line'
                                               ' WHERE ol_w_id = {} AND ol_d_id = {}'
                                               ' AND ol_o_id = ?'.format(w_id, d_id))
 
@@ -56,40 +58,27 @@ class PopularItemTransaction(Transaction):
         return map(get_popular_items_for_orderlines, orderlines_list)
 
     """dict(int, string): mapping for item id to name
-     Get the mapping of item id to name using the list of (set of pupular item, quantity) tuple
+     Get the mapping of item id to name using the list of order lines for each order
     """
-    def get_items_names(self, items_with_quantity):
-        item_ids_list = map(lambda lst: lst[0], items_with_quantity)
-        distinct_item_ids = set([i_id for sublist in item_ids_list for i_id in sublist])
-
-        prepared_query = self.session.prepare('SELECT i_name FROM item WHERE i_id = ?')
-
+    def get_items_names(self, orderlines_for_orders):
         item_id_name = {}
 
-        for item_id in distinct_item_ids:
-            bound_query = prepared_query.bind([item_id])
-            result = self.session.execute(bound_query)
-            item_id_name[item_id] = result[0].i_name
+        for orderlines in orderlines_for_orders:
+            for ol in orderlines:
+                item_id_name[int(ol.ol_i_id)] = ol.i_name
 
         return item_id_name
 
     """
      Print order info
     """
-    def print_order_info(self, w_id, d_id, orders, popular_items_with_quantity, item_ids_name):
+    def print_order_info(self, orders, popular_items_with_quantity, item_ids_name):
         print
-        prepared_query = self.session.prepare('SELECT c_first, c_middle, c_last FROM customer'
-                                              ' WHERE c_w_id = {} AND c_d_id = {} AND c_id = ?'.format(w_id, d_id))
 
         for (order, (popular_item_ids, quantity)) in zip(orders, popular_items_with_quantity):
             print 'Order Number {} at {}'.format(order.o_id, order.o_entry_d)
 
-            c_id = int(order.o_c_id)
-            bound_query = prepared_query.bind([c_id])
-            result = self.session.execute(bound_query)
-            customer = result[0]
-
-            print 'By Customer {} {} {}'.format(customer.c_first, customer.c_middle, customer.c_last)
+            print 'By Customer {} {} {}'.format(order.c_first, order.c_middle, order.c_last)
 
             for item_id in popular_item_ids:
                 print 'Item {} with quantity {}'.format(item_ids_name[item_id], quantity)
