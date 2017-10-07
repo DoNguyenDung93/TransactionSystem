@@ -16,8 +16,6 @@ class NewOrderTransaction(Transaction):
 		orders = map(lambda ol: map(int, ol), params['items'])
 
 		# intermediate data
-		d_tax = self.session.execute('SELECT d_tax FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
-		d_tax = d_tax[0].d_tax
 		w_tax = self.session.execute('SELECT w_tax FROM warehouse WHERE w_id = {}'.format(w_id))
 		w_tax = w_tax[0].w_tax
 		customer = self.session.execute('SELECT c_first, c_middle, c_last, c_credit, c_credit_lim, c_discount FROM customer WHERE c_w_id = {} AND c_d_id = {} AND c_id = {}'.format(w_id, d_id, c_id))
@@ -25,16 +23,19 @@ class NewOrderTransaction(Transaction):
 		c_discount = customer.c_discount
 
 		# processing steps
-		next_o_id = self.get_next_order_id(w_id, d_id)
-		self.update_d_next_o_id(w_id, d_id)
+		next_o_id, d_tax = self.get_d_next_o_id_and_d_tax(w_id, d_id)
+		self.update_d_next_o_id(w_id, d_id, next_o_id)
 		entry_date = self.create_new_order(w_id, d_id, c_id, next_o_id, num_items, orders)
 		print_item_results, total_amount = self.update_stock_and_create_order_line(w_id, d_id, c_id, next_o_id, orders, d_tax, w_tax, c_discount)
 		self.print_output(customer, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
 		self.print_items(print_item_results)
 
-	def update_d_next_o_id(self, w_id, d_id):
-		row = self.session.execute('SELECT d_next_o_id FROM district WHERE d_id = {} AND d_w_id = {}'.format(d_id, w_id))
-		new_d_next_o_id = row[0].d_next_o_id + 1
+	def get_d_next_o_id_and_d_tax(self, w_id, d_id):
+		result = self.session.execute('SELECT d_next_o_id, d_tax FROM district WHERE d_w_id = {} AND d_id = {}'.format(w_id, d_id))
+		return int(result[0].d_next_o_id), int(result[0].d_tax)
+
+	def update_d_next_o_id(self, w_id, d_id, next_o_id):
+		new_d_next_o_id = next_o_id + 1
 		self.session.execute('UPDATE district SET d_next_o_id = {} WHERE d_id = {} AND d_w_id = {}'.format(new_d_next_o_id, d_id, w_id))
 
 	def get_all_local(self, w_id, orders):
