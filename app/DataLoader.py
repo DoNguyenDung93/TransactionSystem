@@ -217,7 +217,8 @@ class DataLoader:
                                 "ol_dist_info, i_name) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         reader = csv.reader(csv_file)
         def get_params_order_line_data_line(self, line):
-            delivery_time = Utility.convert_to_datetime_object(line[5])
+            delivery_time = line[5]
+            delivery_time = Utility.get_time_now() if delivery_time == "-1" else Utility.convert_to_datetime_object(line[5])
             ol_i_id = line[4]
             i_name = self.map_i_name[ol_i_id]
             return (int(line[0]), int(line[1]), int(line[2]), int(line[3]), int(line[4]),

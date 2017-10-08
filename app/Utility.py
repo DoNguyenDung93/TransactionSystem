@@ -2,6 +2,10 @@ from datetime import datetime
 
 class Utility:
 
+    @staticmethod
+    def get_time_now():
+        return Utility.convert_to_datetime_object(str(datetime.now()))
+
     """
         Converts timestring to specified format.
     """
