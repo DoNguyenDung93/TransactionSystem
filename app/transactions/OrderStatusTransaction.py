@@ -23,13 +23,7 @@ class OrderStatusTransaction(Transaction):
         entry_date = last_order.o_entry_d
         carrier = last_order.o_carrier_id
 
-        # item_number = []
-        # supply_warehouse = []
-        # quantity = []
-        # total_price = []
-        # date_time = []
         order_line = self.get_order_line(c_w_id, c_d_id, order_number)
-        # print order_line
 
         print 'Customer Info: ', customer_name_first, customer_name_middle, customer_name_last,\
             ' has balance of ', customer_balance
@@ -52,25 +46,11 @@ class OrderStatusTransaction(Transaction):
 
     # Get the last order info from the customer
     def get_last_order(self, c_w_id, c_d_id, c_id):
-        result = self.session.execute('select o_id, o_entry_d, o_carrier_id from order_ where'
-                                      ' o_w_id = {} and o_d_id = {} and o_c_id = {} allow filtering'
+        result = self.session.execute('select o_id, o_entry_d, o_carrier_id from order_by_customer where'
+                                      ' o_w_id = {} and o_d_id = {} and o_c_id = {} limit 1'
                                       .format(c_w_id, c_d_id, c_id))
-        # print result[0]
-        latest_order = result[0]
-        for index in result:
-            # print index
-            temp = index
-            if temp.o_id > latest_order.o_id:
-                latest_order = temp
-        # latest_time = datetime.strptime(result[0].o_entry_d, '%Y-%m-%d %H-%M-%S.%f')
-        # latest_order = 0
-        # for index in range(len(list(result))):
-        #     time = datetime.strptime(result[index].o_entry_d, '%Y-%m-%d %H-%M-%S')
-        #     if time > latest_time:
-        #         latest_time = time
-        #         latest_order = index
 
-        return latest_order
+        return result[0]
 
     # Get info of each item in the latest order
     def get_order_line(self, c_w_id, c_d_id, o_id):
