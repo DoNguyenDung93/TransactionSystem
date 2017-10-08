@@ -100,6 +100,7 @@ CREATE MATERIALIZED VIEW customer_balance AS
     PRIMARY KEY ((c_w_id, c_d_id), c_balance, c_id)
     WITH CLUSTERING ORDER BY (c_balance desc);
 
+DROP MATERIALIZED VIEW IF EXISTS order_by_customer;
 DROP TABLE IF EXISTS order_;
 CREATE TABLE IF NOT EXISTS order_ (
     O_W_ID int,
@@ -115,6 +116,14 @@ CREATE TABLE IF NOT EXISTS order_ (
     C_LAST varchar,
     PRIMARY KEY ((O_W_ID, O_D_ID), O_ID)
 );
+
+CREATE MATERIALIZED VIEW order_by_customer AS
+    SELECT o_w_id, o_d_id, o_id, o_c_id, o_entry_d, o_carrier_id
+    FROM order_
+    WHERE o_w_id IS NOT NULL AND o_d_id IS NOT NULL AND o_id IS NOT NULL AND o_c_id IS NOT NULL
+    PRIMARY KEY ((o_w_id, o_d_id, o_c_id), o_id)
+    WITH CLUSTERING ORDER BY (o_id desc);
+
 
 DROP TABLE IF EXISTS item;
 CREATE TABLE IF NOT EXISTS item (
