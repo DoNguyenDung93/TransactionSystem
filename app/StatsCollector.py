@@ -23,9 +23,13 @@ class StatsCollector:
 
         def finish(self):
             self.total += time.clock() - self.start_time
+            self.last = time.clock() - self.start_time
  
         def get_total_time(self):
             return self.total
+
+        def get_last(self):
+            return self.last
  
     def __init__(self):
         self.transactions = StatsCollector.Counter()

@@ -3,13 +3,14 @@ import csv
 import itertools
 
 from Utility import Utility
+from StatsCollector import StatsCollector
 from cassandra.cluster import Cluster
 from cassandra.concurrent import execute_concurrent
 from cassandra.query import BatchStatement
 
 class DataLoader:
 
-    BATCH_SIZE = 50
+    BATCH_SIZE = 30
     DATABASE_NAME = "cs4224"
     DEFAULT_DIRECTORY = "."
     DEFAULT_ROW_READ = 1000000000
@@ -27,14 +28,25 @@ class DataLoader:
         self.ORDER_LINE_FILE_PATH = self.DIR_PATH + "/order-line.csv"
         self.STOCK_FILE_PATH      = self.DIR_PATH + "/stock.csv"
 
+    def timemeasure(original_function):
+        def new_function(*args, **kwargs):
+            timer = StatsCollector.Timer()
+            timer.start()
+            original_function(*args, **kwargs)
+            timer.finish()
+            print "%s finished in %s s" % (original_function.__name__, timer.get_last())
+        return new_function
+
 
     """
         Executes some queries using batch statements
     """
-    def execute_in_batch(self, session, reader, query, get_params):
+    def execute_in_batch(self, session, reader, query, extract_data, get_params):
         batch = BatchStatement()
         query_count = 0
         for line in itertools.islice(reader, self.ROW_COUNT):
+            # Store data to be used by other methods
+            extract_data(self, line)
             batch.add(query, get_params(self, line))
             query_count = query_count + 1
             if query_count % self.BATCH_SIZE == 0:
@@ -47,6 +59,7 @@ class DataLoader:
     """
         Load warehouse data
     """
+    @timemeasure
     def load_warehouse_data(self, csv_file, session):
         query = session.prepare("INSERT INTO warehouse (w_id, w_name, w_street_1, w_street_2, w_city, w_state,"
                                 "w_zip, w_ytd) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
@@ -56,24 +69,25 @@ class DataLoader:
             params = (int(line[0]), line[1], line[2], line[3], line[4], line[5], line[6], float(line[8]))
             query_and_params.append((query, params))
 
-        execute_concurrent(session, query_and_params, raise_on_first_error=True)
-
-        # Stores data needed for other methods
-        for line in itertools.islice(reader, row.ROW_COUNT):
+            # Stores data needed for other methods
             w_id, w_name = line[0], line[1]
             self.map_w_name[w_id] = w_name
+
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
         # Load warehouse tax, which is stored on a different table
         query = session.prepare("INSERT INTO warehouse_tax (w_id, w_tax) VALUES(?, ?)")
         query_and_params = []
         for line in itertools.islice(reader, self.ROW_COUNT):
             query_and_params.append((query, (int(line[0]), float(line[7]))))
+
         execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
 
     """
         Load district data
     """
+    @timemeasure
     def load_district_data(self, csv_file, session):
         query = session.prepare("INSERT INTO district (d_w_id, d_id, d_name,"
                                 "d_street_1, d_street_2, d_city, d_state, d_zip, d_ytd)"
@@ -84,12 +98,11 @@ class DataLoader:
             params = (int(line[0]), int(line[1]), line[2], line[3], line[4], line[5], line[6], line[7], float(line[9]))
             query_and_params.append((query, params))
 
-        execute_concurrent(session, query_and_params, raise_on_first_error=True)
-
-        # Stores data needed for other methods
-        for line in itertools.islice(reader, row.ROW_COUNT):
+            # Stores data needed for other methods
             d_w_id, d_id, d_name = line[0], line[1], line[2]
             self.map_d_name[self.JOIN_CH.join((d_w_id, d_id))] = d_name
+
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
         # Load district_next_order_id data, which is stored on a different table
         query = session.prepare("INSERT INTO district_next_order_id (d_w_id, d_id, d_tax, d_next_o_id) "
@@ -103,17 +116,18 @@ class DataLoader:
     """
         Load district_next_smallest_order_id data
     """
-    def load_district_next_smallest_order_id_data(self, csv_file, session)
-        query = session.prepare("INSERT INTO district (d_w_id, d_id, d_next_smallest_o_id) "
+    @timemeasure
+    def load_district_next_smallest_order_id_data(self, csv_file, session):
+        query = session.prepare("INSERT INTO ditrict_next_smallest_order_id (d_w_id, d_id, d_next_smallest_o_id) "
                                 "VALUES (?, ?, ?)")
         reader = csv.reader(csv_file)
         query_and_params = []
         for line in itertools.islice(reader, self.ROW_COUNT):
             d_w_id, d_id = line[0], line[1]
-            key = JOIN_CH.join((d_w_id, d_id))
-            d_next_smallest_o_id = self.map_smallest_o_id[key] if key in self.map_smallest_o_id else 0
+            key = self.JOIN_CH.join((d_w_id, d_id))
+            d_next_smallest_o_id = (self.map_last_delivery[key] if key in self.map_last_delivery else 0) + 1
 
-            query_and_params.append((query, (d_w_id, d_id, d_next_smallest_o_id)))
+            query_and_params.append((query, (int(d_w_id), int(d_id), d_next_smallest_o_id)))
 
         execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
@@ -121,6 +135,7 @@ class DataLoader:
     """
         Load customer data
     """
+    @timemeasure
     def load_customer_data(self, csv_file, session):
         query = session.prepare("INSERT INTO customer (c_w_id, c_d_id, c_id, c_first, c_middle, c_last, "
                                 "c_street_1, c_street_2, c_city, c_state, c_zip, c_phone, "
@@ -132,18 +147,25 @@ class DataLoader:
             datetime = Utility.convert_to_datetime_object(line[12])
             # Reading w_name, d_name from maps created in previous procedures
             c_w_id, c_d_id = line[0], line[1]
-            c_w_name, c_d_name = self.map_w_name[c_w_id], self.map_d_name[c_w_id + "-" + c_d_id]
+            c_w_name, c_d_name = self.map_w_name[c_w_id], self.map_d_name[self.JOIN_CH.join((c_w_id, c_d_id))]
             return (int(line[0]), int(line[1]), int(line[2]), line[3], line[4], line[5],
                       line[6], line[7], line[8], line[9], line[10], line[11], datetime,
                       line[13], float(line[14]), float(line[15]), float(line[16]), float(line[17]),
                       int(line[18]), int(line[19]), line[20], c_w_name, c_d_name)
 
-        self.execute_in_batch(session, reader, query, get_params_customer_data_line)
+        def extract_data(self, line):
+            c_w_id, c_d_id, c_id, c_first, c_middle, c_last =                       \
+                line[0], line[1], line[2], line[3], line[4], line[5]
+            key = self.JOIN_CH.join((c_w_id, c_d_id, c_id))
+            self.map_c_name[key] = (c_first, c_middle, c_last)
+
+        self.execute_in_batch(session, reader, query, extract_data, get_params_customer_data_line)
 
 
     """
         Loads order data
     """
+    @timemeasure
     def load_order_data(self, csv_file, session):
         query = session.prepare("INSERT INTO order_ (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, "
                                 "o_ol_cnt, o_all_local, o_entry_d, c_first, c_middle, c_last) "
@@ -156,39 +178,39 @@ class DataLoader:
             return (int(line[0]), int(line[1]), int(line[2]), int(line[3]),
                      int(line[4]), float(line[5]), float(line[6]), o_entry_d, c_first, c_middle, c_last)
 
-        self.execute_in_batch(session, reader, query, get_params_order_data_line)
-
-        # Stores data needed for other methods
-        for line in itertools.islice(reader, row.ROW_COUNT):
+        def extract_data(self, line):
             o_w_id, o_d_id, o_carrier_id = line[0], line[1], int(line[4])
             if o_carrier_id > 0:
-                key = JOIN_CH.join((o_w_id, d_id))
-                last_delivery = self.map_last_deliver[key] if key in self.map_last_deliver else 0
-                self.map_last_deliver[key] = max(last_deliver, o_carrier_id)
+                key = self.JOIN_CH.join((o_w_id, o_d_id))
+                last_delivery = self.map_last_delivery[key] if key in self.map_last_delivery else 0
+                self.map_last_delivery[key] = max(last_delivery, o_carrier_id)
+
+        self.execute_in_batch(session, reader, query, extract_data, get_params_order_data_line)
 
 
     """
         Loads item data
     """
+    @timemeasure
     def load_item_data(self, csv_file, session):
         query = session.prepare("INSERT INTO item (i_id, i_name, i_price, i_im_id, i_data)"
-                                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                                "VALUES(?, ?, ?, ?, ?)")
         reader = csv.reader(csv_file)
         def get_params_item_data_line(self, line):
             return (int(line[0]), line[1], float(line[2]), int(line[3]), line[4])
 
-        self.execute_in_batch(session, reader, query, get_params_item_data_line)
-
-        # Stores data needed for other methods
-        for line in itertools.islice(reader, row.ROW_COUNT):
+        def extract_data(self, line):
             i_id, i_name, i_price = line[0], line[1], line[2]
             self.map_i_name[i_id] = i_name
             self.map_i_price[i_id] = i_price
+
+        self.execute_in_batch(session, reader, query, extract_data, get_params_item_data_line)
 
 
     """
         Loads order-line data
     """
+    @timemeasure
     def load_order_line_data(self, csv_file, session):
         query = session.prepare("INSERT INTO order_line (ol_w_id, ol_d_id, ol_o_id, ol_number, "
                                 "ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, "
@@ -199,18 +221,22 @@ class DataLoader:
             ol_i_id = line[4]
             i_name = self.map_i_name[ol_i_id]
             return (int(line[0]), int(line[1]), int(line[2]), int(line[3]), int(line[4]),
-                    delivery_time, float(line[6], int(line[7])), float(line[8]), line[9], i_name)
+                    delivery_time, float(line[6]), int(line[7]), float(line[8]), line[9], i_name)
 
-        self.execute_in_batch(session, reader, query, get_params_order_line_data_line)
+        def extract_data(self, line):
+            pass
+
+        self.execute_in_batch(session, reader, query, extract_data, get_params_order_line_data_line)
 
 
     """
         Loads stock data
     """
+    @timemeasure
     def load_stock_data(self, csv_file, session):
         query = session.prepare("INSERT INTO stock (s_w_id, s_i_id, s_quantity, s_ytd, s_order_cnt, s_remote_cnt, "
-                                "s_dist_1, s_dist_2, s_dist_3, s_dist_4, s_dist_5, "
-                                "s_dist_6, s_dist_7, s_dist_8, s_dist_9, s_dist_10, s_data, i_price) "
+                                "s_dist_01, s_dist_02, s_dist_03, s_dist_04, s_dist_05, "
+                                "s_dist_06, s_dist_07, s_dist_08, s_dist_09, s_dist_10, s_data, i_price) "
                                 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         reader = csv.reader(csv_file)
         def get_params_stock_data_line(self, line):
@@ -220,7 +246,10 @@ class DataLoader:
                     line[6], line[7], line[8], line[9], line[10], line[11], line[12], line[13], line[14], line[15],
                     line[16], float(i_price))
 
-       self.execute_in_batch(session, reader, query, get_params_stock_data_line)
+        def extract_data(self, line):
+            pass
+
+        self.execute_in_batch(session, reader, query, extract_data, get_params_stock_data_line)
 
 
     """
@@ -229,6 +258,7 @@ class DataLoader:
     def execute(self):
         # Initialize map for denormalizing tables
         self.map_d_name, self.map_w_name, self.map_c_name = {}, {}, {}
+        self.map_last_delivery, self.map_i_name, self.map_i_price = {}, {}, {}
 
         # Connect to cassandra server
         cluster = Cluster()
@@ -239,7 +269,7 @@ class DataLoader:
         self.load_customer_data(open(self.CUSTOMER_FILE_PATH), session)
         self.load_order_data(open(self.ORDER_FILE_PATH), session)
         self.load_item_data(open(self.ITEM_FILE_PATH), session)
-        self.load_order_line_data(oppen(self.ORDER_LINE_FILE_PATH, session))
+        self.load_order_line_data(open(self.ORDER_LINE_FILE_PATH), session)
         self.load_stock_data(open(self.STOCK_FILE_PATH), session)
         self.load_district_next_smallest_order_id_data(open(self.DISTRICT_FILE_PATH), session)
 
