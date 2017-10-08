@@ -70,6 +70,7 @@ class DataLoader:
             query_and_params.append((query, (int(line[0]), float(line[7]))))
         execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
+
     """
         Load district data
     """
@@ -89,6 +90,32 @@ class DataLoader:
         for line in itertools.islice(reader, row.ROW_COUNT):
             d_w_id, d_id, d_name = line[0], line[1], line[2]
             self.map_d_name[self.JOIN_CH.join((d_w_id, d_id))] = d_name
+
+        # Load district_next_order_id data, which is stored on a different table
+        query = session.prepare("INSERT INTO district_next_order_id (d_w_id, d_id, d_tax, d_next_o_id) "
+                                "VALUES(?, ?, ?, ?)")
+        query_and_params = []
+        for line in itertools.islice(reader, self.ROW_COUNT):
+            query_and_params.append((query, (int(line[0]), int(line[1]), float(line[8]), int(line[10]))))
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
+
+
+    """
+        Load district_next_smallest_order_id data
+    """
+    def load_district_next_smallest_order_id_data(self, csv_file, session)
+        query = session.prepare("INSERT INTO district (d_w_id, d_id, d_next_smallest_o_id) "
+                                "VALUES (?, ?, ?)")
+        reader = csv.reader(csv_file)
+        query_and_params = []
+        for line in itertools.islice(reader, self.ROW_COUNT):
+            d_w_id, d_id = line[0], line[1]
+            key = JOIN_CH.join((d_w_id, d_id))
+            d_next_smallest_o_id = self.map_smallest_o_id[key] if key in self.map_smallest_o_id else 0
+
+            query_and_params.append((query, (d_w_id, d_id, d_next_smallest_o_id)))
+
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
 
     """
@@ -126,11 +153,18 @@ class DataLoader:
             o_entry_d = Utility.convert_to_datetime_object(line[7])
             o_w_id, o_d_id, o_c_id = line[0], line[1], line[3]
             c_first, c_middle, c_last = self.map_c_name[self.JOIN_CH.join((o_w_id, o_d_id, o_c_id))]
-            # TODO(nqdung): do need to check if carrier id is null ?
             return (int(line[0]), int(line[1]), int(line[2]), int(line[3]),
                      int(line[4]), float(line[5]), float(line[6]), o_entry_d, c_first, c_middle, c_last)
 
         self.execute_in_batch(session, reader, query, get_params_order_data_line)
+
+        # Stores data needed for other methods
+        for line in itertools.islice(reader, row.ROW_COUNT):
+            o_w_id, o_d_id, o_carrier_id = line[0], line[1], int(line[4])
+            if o_carrier_id > 0:
+                key = JOIN_CH.join((o_w_id, d_id))
+                last_delivery = self.map_last_deliver[key] if key in self.map_last_deliver else 0
+                self.map_last_deliver[key] = max(last_deliver, o_carrier_id)
 
 
     """
@@ -206,6 +240,8 @@ class DataLoader:
         self.load_order_data(open(self.ORDER_FILE_PATH), session)
         self.load_item_data(open(self.ITEM_FILE_PATH), session)
         self.load_order_line_data(oppen(self.ORDER_LINE_FILE_PATH, session))
+        self.load_stock_data(open(self.STOCK_FILE_PATH), session)
+        self.load_district_next_smallest_order_id_data(open(self.DISTRICT_FILE_PATH), session)
 
 
 if __name__ == '__main__':
