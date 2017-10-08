@@ -18,7 +18,7 @@ class TopBalanceTransaction(Transaction):
     """
     def get_top_10_balance_users_by_w_id(self, w_id):
         query = "select c_w_id, c_d_id, c_first, c_middle, c_last, c_balance " \
-                "from cs4224.customer where c_w_id = %s" % w_id
+                "from cs4224.customer_balance where c_w_id = %s limit 10" % w_id
         results = self.session.execute(query)
         users = list(map(lambda result: 
             {"c_w_id"   : result.c_w_id,
@@ -27,8 +27,8 @@ class TopBalanceTransaction(Transaction):
              "c_middle" : result.c_middle,
              "c_last"   : result.c_last,
              "c_balance": result.c_balance}, results))
-        users.sort(self.compare_user_balance, reverse=True)
-        return users[:10]
+        #users.sort(self.compare_user_balance, reverse=True)
+        return users
 
     """ Get users with the top 10 balance in all warehouse
     """
