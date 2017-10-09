@@ -118,7 +118,7 @@ class DataLoader:
     """
     @timemeasure
     def load_district_next_smallest_order_id_data(self, csv_file, session):
-        query = session.prepare("INSERT INTO ditrict_next_smallest_order_id (d_w_id, d_id, d_next_smallest_o_id) "
+        query = session.prepare("INSERT INTO district_next_smallest_order_id (d_w_id, d_id, d_next_smallest_o_id) "
                                 "VALUES (?, ?, ?)")
         reader = csv.reader(csv_file)
         query_and_params = []

@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS district_next_order_id (
     PRIMARY KEY ((D_W_ID, D_ID))
 );
 
-DROP TABLE IF EXISTS ditrict_next_smallest_order_id;
-CREATE TABLE IF NOT EXISTS ditrict_next_smallest_order_id (
+DROP TABLE IF EXISTS district_next_smallest_order_id;
+CREATE TABLE IF NOT EXISTS district_next_smallest_order_id (
     D_W_ID int,
     D_ID int,
     D_NEXT_SMALLEST_O_ID int,
