@@ -21,4 +21,4 @@ cd ../../
 echo "Setting up models for Cassandra"
 time cqlsh -f Schema_Commands.txt
 echo "Loading data"
-time python app/DataLoader.py --path cs4224-project-files/data-files
+time python app/DataLoader.py --path 4224-project-files/data-files
