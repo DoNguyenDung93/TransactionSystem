@@ -89,14 +89,16 @@ CREATE TABLE IF NOT EXISTS customer (
 );
 
 CREATE MATERIALIZED VIEW customer_balance AS
-    SELECT c_id, c_first, c_middle, c_last, c_balance FROM customer WHERE
+    SELECT c_id, c_first, c_middle, c_last, c_balance, w_name, d_name FROM customer WHERE
     c_id IS NOT NULL AND
     c_w_id IS NOT NULL AND
     c_d_id IS NOT NULL AND
     c_first IS NOT NULL AND
     c_middle IS NOT NULL AND
     c_last IS NOT NULL AND
-    c_balance IS NOT NULL
+    c_balance IS NOT NULL AND
+    w_name IS NOT NULL AND
+    d_name is NOT NULL
     PRIMARY KEY ((c_w_id, c_d_id), c_balance, c_id)
     WITH CLUSTERING ORDER BY (c_balance desc);
 
