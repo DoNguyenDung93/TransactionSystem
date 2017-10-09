@@ -19,6 +19,6 @@ echo "Done replacing null values"
 cd ../../
 
 echo "Setting up models for Cassandra"
-cqlsh -f Schema_Commands.txt
+time cqlsh -f Schema_Commands.txt
 echo "Loading data"
-python app/DataLoader.py --path cs4224-project-files/data-files
+time python app/DataLoader.py --path cs4224-project-files/data-files
