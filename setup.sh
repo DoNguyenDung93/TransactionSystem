@@ -18,6 +18,7 @@ cd 4224-project-files/data-files
 echo "Done replacing null values"
 cd ../../
 
-echo "Setting up data for Cassandra"
- cqlsh -f Schema_Commands.txt
-#cqlsh -f Schema_Commands_New.txt
+echo "Setting up models for Cassandra"
+cqlsh -f Schema_Commands.txt
+echo "Loading data"
+python app/DataLoader.py --path cs4224-project-files/data-files
