@@ -4,7 +4,7 @@ class Utility:
 
     @staticmethod
     def get_time_now():
-        return Utility.convert_to_datetime_object(str(datetime.now()))
+        return Utility.convert_to_datetime_object(str(datetime.utcnow()))
 
     """
         Converts timestring to specified format.
