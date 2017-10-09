@@ -13,6 +13,9 @@ from transactions.PopularItemTransaction import PopularItemTransaction
 from transactions.StockLevelTransaction import StockLevelTransaction
 from transactions.TopBalanceTransaction import TopBalanceTransaction
 
+# Consistency level: ONE = 1, QUORUM = 4
+DEFAULT_CONSISTENCY_LEVEL = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+
 class Client:
 
     def __init__(self):
@@ -63,6 +66,7 @@ class Client:
         # Connect to cassandra server
         cluster = Cluster()
         session = cluster.connect('cs4224')
+        session.default_consistency_level = DEFAULT_CONSISTENCY_LEVEL
 
         # Reading transactions line by line, parsing and execute
         while True:
