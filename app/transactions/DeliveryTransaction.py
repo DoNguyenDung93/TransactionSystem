@@ -16,8 +16,8 @@ class DeliveryTransaction(Transaction):
         #                                                             'and o_d_id = ?'
         #                                                             'and o_carrier_id = -1 limit 1 allow filtering'
         #                                                             .format(w_id))
-        self.get_smallest_order_number_query = self.session.prepare('select d_next_smallest_o_id from '
-                                                                    'district_next_smallest_order_id where d_w_id = {]'
+        self.get_smallest_order_number_query = self.session.prepare('jjjjjselect d_next_smallest_o_id from '
+                                                                    'district_next_smallest_order_id where d_w_id = {}'
                                                                     'and d_id = ?'.format(w_id))
         self.get_customer_id_query = self.session.prepare('select o_c_id from order_ where o_w_id = {} '
                                                           'and o_d_id = ? and o_id = ?'.format(w_id))

@@ -29,7 +29,7 @@ class NewOrderTransaction(Transaction):
 
 	def get_w_tax(self, w_id):
 		"""Get warehouse tax from the vertical partition table warehouse_tax"""
-		prepared_query = self.session.prepre('SELECT w_tax FROM warehouse_tax WHERE w_id = ?')
+		prepared_query = self.session.prepare('SELECT w_tax FROM warehouse_tax WHERE w_id = ?')
 		bound_query = prepared_query.bind([w_id])
 		rows = list(self.session.execute(bound_query))
 		if len(rows) == 0:
