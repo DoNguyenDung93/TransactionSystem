@@ -1,4 +1,5 @@
 import sys
+import traceback
 
 from StatsCollector import StatsCollector
 from Parser import Parser
@@ -52,8 +53,8 @@ class Client:
 
         try:
             transaction.execute(transaction_params)
-        except:
-            print "Transaction could not be executed"
+        except Exception:
+            print "Transaction could not be executed", traceback.format_exc()
 
 
     """ Initalize necessary objects, read and execute transaction.
