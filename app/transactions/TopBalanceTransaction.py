@@ -4,44 +4,40 @@ class TopBalanceTransaction(Transaction):
     def __init__(self, session):
         self.session = session
 
-    """ Compares two users by balance
-    """
-    def compare_user_balance(self, u1, u2):
-        if u1["c_balance"] < u2["c_balance"]:
-            return -1
-        elif u2["c_balance"] == u2["c_balance"]:
-            return 0
-        else:
-            return 1
+    """ Get users with the top 10 balance from a warehouse district
+     """
+
+    def get_top_10_balance_users_by_w_id_and_d_id(self, w_id, d_id):
+        prepared_query = self.session.prepare('select c_w_id, c_d_id, c_first, c_middle, c_last, c_balance, d_name, w_name '
+                                              'from cs4224.customer_balance where c_w_id = ? and c_d_id = ? limit 10')
+        bound_query = prepared_query.bind([w_id, d_id])
+        results = self.session.execute(bound_query)
+        users = list(results)
+        # users.sort(self.compare_user_balance, reverse=True)
+        return users
 
     """ Get users with the top 10 balance from a warehouse
     """
     def get_top_10_balance_users_by_w_id(self, w_id):
-        query = "select c_w_id, c_d_id, c_first, c_middle, c_last, c_balance " \
-                "from cs4224.customer_balance where c_w_id = %s limit 10" % w_id
-        results = self.session.execute(query)
-        users = list(map(lambda result: 
-            {"c_w_id"   : result.c_w_id,
-             "c_d_id"   : result.c_d_id,
-             "c_first"  : result.c_first,
-             "c_middle" : result.c_middle,
-             "c_last"   : result.c_last,
-             "c_balance": result.c_balance}, results))
-        #users.sort(self.compare_user_balance, reverse=True)
-        return users
+        results = []
+        for d_id in range(1, 11):
+            district_top_balance = self.get_top_10_balance_users_by_w_id_and_d_id(w_id, d_id)
+            # Combine results but only keep 10 top results
+            results += district_top_balance
+            results.sort(key=lambda v: float(v.c_balance), reverse=True)
+            results = results[:10]
+        return results
 
     """ Get users with the top 10 balance in all warehouse
     """
     def get_top_10_balance_users(self):
-        query = "select w_id from cs4224.warehouse" 
-        warehouse_ids = self.session.execute(query)
 
         result = []
-        for warehouse_id in warehouse_ids:
+        for warehouse_id in range(1, 16):
             warehouse_top_balance = self.get_top_10_balance_users_by_w_id(warehouse_id)
             # Combine results but only keep 10 top results
             result += warehouse_top_balance
-            result.sort(self.compare_user_balance, reverse=True)
+            result.sort(key=lambda v: float(v.c_balance), reverse=True)
             result = result[:10]
         return result
 
@@ -49,22 +45,10 @@ class TopBalanceTransaction(Transaction):
         # Get top 10 users with most balance
         users = self.get_top_10_balance_users()
 
-        # Create queries for w_name and d_name
-        query = "select w_name "         \
-                "from cs4224.warehouse " \
-                "where w_id = ? allow filtering"
-        w_name_query = self.session.prepare(query)
-        
-        query = "select d_name "        \
-                "from cs4224.district " \
-                "where d_id = ? allow filtering"
-        d_name_query = self.session.prepare(query)
-
-        # Get d_name and w_name for each user
-        results = []
+        print 'Top 10 customers'
         for user in users:
-            result = user
-            result["w_name"] = self.session.execute(w_name_query.bind([user["c_w_id"]]))[0].w_name
-            result["d_name"] = self.session.execute(d_name_query.bind([user["c_d_id"]]))[0].d_name
-            results.append(result)
-        return results
+            print 'Name:', user.c_first, user.c_middle, user.c_last
+            print 'Balance:', user.c_balance
+            print 'Warehouse:', user.w_name
+            print 'District', user.d_name
+            print
