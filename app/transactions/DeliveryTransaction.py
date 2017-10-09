@@ -93,6 +93,6 @@ class DeliveryTransaction(Transaction):
 
     # Increase the current customer balance with the value of the order
     def update_customer_balance_delivery(self, customer_id, sum_order, num, current_balance, delivery_cnt):
-        self.session.execute(self.update_customer_balance_delivery_query.bind([current_balance + sum_order,
+        self.session.execute(self.update_customer_balance_delivery_query.bind([float(current_balance) + float(sum_order),
                                                                                int(delivery_cnt) + 1, customer_id, num]))
 
