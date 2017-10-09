@@ -16,9 +16,12 @@ class DeliveryTransaction(Transaction):
         #                                                             'and o_d_id = ?'
         #                                                             'and o_carrier_id = -1 limit 1 allow filtering'
         #                                                             .format(w_id))
-        self.get_smallest_order_number_query = self.session.prepare('jjjjjselect d_next_smallest_o_id from '
-                                                                    'district_next_smallest_order_id where d_w_id = {}'
+        self.get_smallest_order_number_query = self.session.prepare('select d_next_smallest_o_id from '
+                                                                    'district_next_smallest_order_id where d_w_id = {} '
                                                                     'and d_id = ?'.format(w_id))
+        increment_smallest_order = self.session.prepare('update district_next_smallest_order_id'
+                                                             ' set d_next_smallest_o_id = ? where d_w_id = ?'
+                                                             ' and d_id = ?')
         self.get_customer_id_query = self.session.prepare('select o_c_id from order_ where o_w_id = {} '
                                                           'and o_d_id = ? and o_id = ?'.format(w_id))
         self.update_order_query = self.session.prepare('update order_ set o_carrier_id = ? where o_id = ? '
@@ -37,21 +40,21 @@ class DeliveryTransaction(Transaction):
                                                                            'where c_id = ? and c_w_id = {} '
                                                                            'and c_d_id = ?'.format(w_id))
 
-        for num in range(1, 10):
+        for num in range(1, 11):
             # order_info = self.get_smallest_order_number(num)
             # if order_info is None:
             #     continue
             # smallest_order_number = int(order_info[0])
             # customer_id = int(order_info[1])
             smallest_order_number = self.get_smallest_order_number(num)
-            if smallest_order_number is None:
-                continue
+            self.session.execute(
+                increment_smallest_order.bind([int(smallest_order_number) + 1, w_id, num]))
             customer_id = self.get_customer_id(num, smallest_order_number)
             self.update_order(smallest_order_number, carrier_id, num)
-            sum_order = decimal.Decimal(0)
+            sum_order = 0.
             for ol_number in self.get_order_line_number(smallest_order_number, num):
-                sum_order += ol_number[1]
-                self.update_order_line(smallest_order_number, num, ol_number[0])
+                sum_order += float(ol_number.ol_amount)
+                self.update_order_line(smallest_order_number, num, ol_number.ol_number)
             customer_balance_delivery = self.get_customer_balance_delivery(customer_id, num)
             delivery_cnt = customer_balance_delivery.c_delivery_cnt
             current_balance = customer_balance_delivery.c_balance
@@ -61,10 +64,6 @@ class DeliveryTransaction(Transaction):
     # and O_CARRIER_ID = -1
     def get_smallest_order_number(self, num):
         result = self.session.execute(self.get_smallest_order_number_query.bind([num]))
-        # smallest_result = result[0].o_id
-        # for index in range(len(list(result))):
-        #     if result[index].o_id < smallest_result:
-        #         smallest_result = result[index].o_id
         return result[0].d_next_smallest_o_id
 
     # Get the customer id of the smallest order id
@@ -95,5 +94,5 @@ class DeliveryTransaction(Transaction):
     # Increase the current customer balance with the value of the order
     def update_customer_balance_delivery(self, customer_id, sum_order, num, current_balance, delivery_cnt):
         self.session.execute(self.update_customer_balance_delivery_query.bind([current_balance + sum_order,
-                                                                               delivery_cnt + 1, customer_id, num]))
+                                                                               int(delivery_cnt) + 1, customer_id, num]))
 
