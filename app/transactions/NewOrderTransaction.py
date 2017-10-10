@@ -32,9 +32,9 @@ class NewOrderTransaction(Transaction):
 		prepared_query = self.session.prepare('SELECT w_tax FROM warehouse_tax WHERE w_id = ?')
 		bound_query = prepared_query.bind([w_id])
 		rows = list(self.session.execute(bound_query))
-		if len(rows) == 0:
+		if not rows:
 			print "Cannot find any warehouse with w_id {}".format(w_id)
-			return 0
+			return
 		else:
 			return Decimal(rows[0].w_tax)
 
@@ -43,9 +43,9 @@ class NewOrderTransaction(Transaction):
 		prepared_query = self.session.prepare('SELECT c_last, c_credit, c_discount FROM customer WHERE  c_w_id = ? AND c_d_id = ? AND c_id = ?')
 		bound_query = prepared_query.bind([w_id, d_id, c_id])
 		rows = list(self.session.execute(bound_query))
-		if len(rows) == 0:
+		if not rows:
 			print "Cannot find any customer with w_id d_id c_id {} {} {}".format(w_id, d_id, c_id)
-			return None
+			return
 		else:
 			return rows[0]
 
@@ -54,14 +54,14 @@ class NewOrderTransaction(Transaction):
 		prepared_query = self.session.prepare('SELECT d_next_o_id, d_tax FROM district_next_order_id WHERE d_w_id = ? AND d_id = ?')
 		bound_query = prepared_query.bind([w_id, d_id])
 		rows = list(self.session.execute(bound_query))
-		if len(rows) == 0:
+		if not rows:
 			print "Cannot find any district with w_id d_id {} {}".format(w_id, d_id)
-			return 0, 0
+			return
 		else:
 			return int(rows[0].d_next_o_id), Decimal(rows[0].d_tax)
 
 	def update_d_next_o_id(self, w_id, d_id, new_d_next_o_id):
-		"""Increment d_next_o_id of district table"""
+		"""Increment d_next_o_id of district_next_order_id table"""
 		prepared_query = self.session.prepare('UPDATE district_next_order_id SET d_next_o_id = ? WHERE d_id = ? AND d_w_id = ?')
 		bound_query = prepared_query.bind([w_id, d_id, new_d_next_o_id])
 		self.session.execute(bound_query)
