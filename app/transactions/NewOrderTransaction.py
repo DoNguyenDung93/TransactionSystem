@@ -23,7 +23,7 @@ class NewOrderTransaction(Transaction):
 		next_o_id, d_tax = self.get_d_next_o_id_and_d_tax(w_id, d_id)
 		self.update_d_next_o_id(w_id, d_id, next_o_id+1)
 		entry_date = self.create_new_order(w_id, d_id, c_id, next_o_id, num_items, orders)
-		c_discount = float(customer.c_discount)
+		c_discount = Decimal(customer.c_discount)
 		print_item_results, total_amount = self.update_stock_and_create_order_line(w_id, d_id, c_id, next_o_id, orders, d_tax, w_tax, c_discount)
 		self.print_output(w_id, d_id, c_id, customer, w_tax, d_tax, next_o_id, entry_date, num_items, total_amount)
 		self.print_items(print_item_results)
