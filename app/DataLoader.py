@@ -17,7 +17,8 @@ class DataLoader:
     TOKEN_SEPARATOR = ","
     JOIN_CH = "-"
 
-    def __init__(self, dir_path = DEFAULT_DIRECTORY, row_count = DEFAULT_ROW_READ):
+    def __init__(self, dir_path = DEFAULT_DIRECTORY, row_count = DEFAULT_ROW_READ, only_additional_tables = False):
+        self.only_additional_tables = only_additional_tables
         self.DIR_PATH = dir_path
         self.ROW_COUNT = row_count
         self.WAREHOUSE_FILE_PATH  = self.DIR_PATH + "/warehouse.csv"
@@ -75,14 +76,6 @@ class DataLoader:
 
         execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
-        # Load warehouse tax, which is stored on a different table
-        query = session.prepare("INSERT INTO warehouse_tax (w_id, w_tax) VALUES(?, ?)")
-        query_and_params = []
-        for line in itertools.islice(reader, self.ROW_COUNT):
-            query_and_params.append((query, (int(line[0]), float(line[7]))))
-
-        execute_concurrent(session, query_and_params, raise_on_first_error=True)
-
 
     """
         Load district data
@@ -102,14 +95,6 @@ class DataLoader:
             d_w_id, d_id, d_name = line[0], line[1], line[2]
             self.map_d_name[self.JOIN_CH.join((d_w_id, d_id))] = d_name
 
-        execute_concurrent(session, query_and_params, raise_on_first_error=True)
-
-        # Load district_next_order_id data, which is stored on a different table
-        query = session.prepare("INSERT INTO district_next_order_id (d_w_id, d_id, d_tax, d_next_o_id) "
-                                "VALUES(?, ?, ?, ?)")
-        query_and_params = []
-        for line in itertools.islice(reader, self.ROW_COUNT):
-            query_and_params.append((query, (int(line[0]), int(line[1]), float(line[8]), int(line[10]))))
         execute_concurrent(session, query_and_params, raise_on_first_error=True)
 
 
@@ -254,6 +239,35 @@ class DataLoader:
 
 
     """
+        Loads warehouse tax data
+    """
+    @timemeasure
+    def load_warehouse_tax_data(self, csv_file, session):
+        query = session.prepare("INSERT INTO warehouse_tax (w_id, w_tax) VALUES(?, ?)")
+        reader = csv.reader(csv_file)
+        query_and_params = []
+        for line in itertools.islice(reader, self.ROW_COUNT):
+            query_and_params.append((query, (int(line[0]), float(line[7]))))
+
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
+
+
+    """
+        Loads district next order id data
+    """
+    @timemeasure
+    def load_district_next_order_id_data(self, csv_file, session):
+        query = session.prepare("INSERT INTO district_next_order_id (d_w_id, d_id, d_tax, d_next_o_id) "
+                                "VALUES(?, ?, ?, ?)")
+        reader = csv.reader(csv_file)
+        query_and_params = []
+        for line in itertools.islice(reader, self.ROW_COUNT):
+            query_and_params.append((query, (int(line[0]), int(line[1]), float(line[8]), int(line[10]))))
+
+        execute_concurrent(session, query_and_params, raise_on_first_error=True)
+
+
+    """
         Reads and passes data to corresponding handling method.
     """
     def execute(self):
@@ -265,14 +279,17 @@ class DataLoader:
         cluster = Cluster()
         session = cluster.connect(DataLoader.DATABASE_NAME)
 
-        self.load_warehouse_data(open(self.WAREHOUSE_FILE_PATH), session)
-        self.load_district_data(open(self.DISTRICT_FILE_PATH), session)
-        self.load_customer_data(open(self.CUSTOMER_FILE_PATH), session)
-        self.load_order_data(open(self.ORDER_FILE_PATH), session)
-        self.load_item_data(open(self.ITEM_FILE_PATH), session)
-        self.load_order_line_data(open(self.ORDER_LINE_FILE_PATH), session)
-        self.load_stock_data(open(self.STOCK_FILE_PATH), session)
-        self.load_district_next_smallest_order_id_data(open(self.DISTRICT_FILE_PATH), session)
+        if not self.only_additional_tables:
+            self.load_warehouse_data(open(self.WAREHOUSE_FILE_PATH), session)
+            self.load_district_data(open(self.DISTRICT_FILE_PATH), session)
+            self.load_customer_data(open(self.CUSTOMER_FILE_PATH), session)
+            self.load_order_data(open(self.ORDER_FILE_PATH), session)
+            self.load_item_data(open(self.ITEM_FILE_PATH), session)
+            self.load_order_line_data(open(self.ORDER_LINE_FILE_PATH), session)
+            self.load_stock_data(open(self.STOCK_FILE_PATH), session)
+            self.load_district_next_smallest_order_id_data(open(self.DISTRICT_FILE_PATH), session)
+        self.load_warehouse_tax_data(open(self.WAREHOUSE_FILE_PATH), session)
+        self.load_district_next_order_id_data(open(self.DISTRICT_FILE_PATH), session)
 
 
 if __name__ == '__main__':
@@ -280,11 +297,13 @@ if __name__ == '__main__':
     # List of arguments
     ap.add_argument("-p", "--path", required=True, help="Path to directory containing data")
     ap.add_argument("-c", "--count", required=False, help="Limit number of rows to be processed")
+    ap.add_argument("-a", "--add", required=False, help="Only load additional tables (warehouse_tax, district_next_order_data)")
     args = vars(ap.parse_args())
 
     # Getting arguments from user
     dir_path = args['path']
     row_count = int(args['count']) if args['count'] else args['count']
+    only_add = args['add']
 
-    loader = DataLoader(dir_path, row_count)
+    loader = DataLoader(dir_path, row_count, only_add)
     loader.execute()
