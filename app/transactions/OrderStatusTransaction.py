@@ -42,6 +42,9 @@ class OrderStatusTransaction(Transaction):
     def get_customer_info(self, c_w_id, c_d_id, c_id):
         result = self.session.execute('select c_first, c_middle, c_last, c_balance from customer where'
                                       ' c_w_id = {} and c_d_id = {} and c_id = {}'.format(c_w_id, c_d_id, c_id))
+        if not result:
+            print 'Cannot find customer with w_id {} d_id {} c_id {}'.format(c_w_id, c_d_id, c_id)
+            return
         return result[0]
 
     # Get the last order info from the customer
