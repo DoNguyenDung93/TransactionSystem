@@ -47,6 +47,9 @@ class DeliveryTransaction(Transaction):
             # smallest_order_number = int(order_info[0])
             # customer_id = int(order_info[1])
             smallest_order_number = self.get_smallest_order_number(num)
+            if not smallest_order_number:
+                continue
+
             self.session.execute(
                 increment_smallest_order.bind([int(smallest_order_number) + 1, w_id, num]))
             customer_id = self.get_customer_id(num, smallest_order_number)
