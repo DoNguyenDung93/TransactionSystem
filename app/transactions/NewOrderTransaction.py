@@ -33,7 +33,7 @@ class NewOrderTransaction(Transaction):
 		bound_query = prepared_query.bind([w_id])
 		rows = list(self.session.execute(bound_query))
 		if len(rows) == 0:
-			print "Cannot find any warehouse with w_id {} {} {}".format(w_id)
+			print "Cannot find any warehouse with w_id {}".format(w_id)
 			return 0
 		else:
 			return Decimal(rows[0].w_tax)
