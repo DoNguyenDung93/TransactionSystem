@@ -10,6 +10,12 @@ class PopularItemTransaction(Transaction):
         next_order_id = self.get_next_order_id(w_id, d_id)
         last_l_orders = self.get_last_l_orders(w_id, d_id, next_order_id, num_last_orders)
         orderlines_for_orders = self.get_orderlines_for_orders(w_id, d_id, last_l_orders)
+
+        if not orderlines_for_orders:
+            print 'Cannot get any order lines'
+            print
+            return
+
         popular_items_with_quantity = self.get_popular_items_with_quantity(orderlines_for_orders)
         item_ids_names = self.get_items_names(orderlines_for_orders)
 
