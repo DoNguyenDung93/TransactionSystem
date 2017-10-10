@@ -69,6 +69,9 @@ class DeliveryTransaction(Transaction):
     # Get the customer id of the smallest order id
     def get_customer_id(self, num, smallest_order_number):
         result = self.session.execute(self.get_customer_id_query.bind([num, smallest_order_number]))
+        if not result:
+            print 'Cannot find customer for order number', smallest_order_number
+            return
         return result[0].o_c_id
 
     # Update the O_CARRIER_ID with CARRIER_ID input

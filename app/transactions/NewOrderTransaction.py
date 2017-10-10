@@ -62,7 +62,7 @@ class NewOrderTransaction(Transaction):
 
 	def update_d_next_o_id(self, w_id, d_id, new_d_next_o_id):
 		"""Increment d_next_o_id of district table"""
-		prepared_query = self.session.prepare('UPDATE district SET d_next_o_id = ? WHERE d_id = ? AND d_w_id = ?')
+		prepared_query = self.session.prepare('UPDATE district_next_order_id SET d_next_o_id = ? WHERE d_id = ? AND d_w_id = ?')
 		bound_query = prepared_query.bind([w_id, d_id, new_d_next_o_id])
 		self.session.execute(bound_query)
 
