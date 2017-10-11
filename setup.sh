@@ -18,7 +18,8 @@ cd 4224-project-files/data-files
 echo "Done replacing null values"
 cd ../../
 
+time python app/DataTransformer.py -p 4224-project-files/data-files/ -o data-files/
+
 echo "Setting up models for Cassandra"
 time cqlsh -f Schema_Commands.txt
 echo "Loading data"
-time python app/DataLoader.py --path 4224-project-files/data-files
