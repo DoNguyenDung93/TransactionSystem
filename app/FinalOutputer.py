@@ -9,7 +9,7 @@ class FinalOutputer:
         # Connect to cassandra server
         cluster = Cluster()
         session = cluster.connect('cs4224')
-        session.request_timeout = 1000000000000000
+        session.execute.im_self.request_timeout = 1000000000000000
 
         transaction = DatabaseStateTransaction(session)
         transaction.execute({})

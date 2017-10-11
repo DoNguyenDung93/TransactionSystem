@@ -30,29 +30,11 @@ class Client:
     def execute_transaction(self, session, transaction_type, transaction_params):
         transaction = DummyTransaction(session)
 
-        if transaction_type == Parser.NEW_ORDER:
-            transaction = NewOrderTransaction(session)
-
-        elif transaction_type == Parser.PAYMENT:
-            transaction = PaymentTransaction(session)
-
-        elif transaction_type == Parser.DELIVERY:
+        if transaction_type == Parser.DELIVERY:
             transaction = DeliveryTransaction(session)
 
-        elif transaction_type == Parser.ORDER_STATUS:
-            transaction = OrderStatusTransaction(session)
-
-        elif transaction_type == Parser.STOCK_LEVEL:
-            transaction = StockLevelTransaction(session)
-
-        elif transaction_type == Parser.POPULAR_ITEM:
-            transaction = PopularItemTransaction(session)
-
-        elif transaction_type == Parser.TOP_BALANCE:
-            transaction = TopBalanceTransaction(session)
-
-        elif transaction_type == Parser.ORDER_LINE:
-            pass
+        else:
+            return
 
         try:
             transaction.execute(transaction_params)
@@ -67,7 +49,7 @@ class Client:
         cluster = Cluster()
         session = cluster.connect('cs4224')
         session.default_consistency_level = DEFAULT_CONSISTENCY_LEVEL
-        session.request_timeout = 1000000000000000
+        session.execute.im_self.request_timeout = 1000000000000000
 
         # Reading transactions line by line, parsing and execute
         while True:
