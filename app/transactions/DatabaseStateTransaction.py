@@ -16,7 +16,19 @@ class DatabaseStateTransaction(Transaction):
         print 'max(o_id), sum(o_ol_cnt) from order_', \
             join_cast_str(self.session.execute('select max(o_id), sum(o_ol_cnt) from order_')[0])
         print 'sum(ol_amount), sum(ol_quantity) from order_line', \
-            join_cast_str(self.session.execute('select sum(ol_amount), sum(ol_quantity) from order_line')[0])
+            join_cast_str(self.get_orderline_stat())
         print 'sum(s_quantity), sum(s_ytd), sum(s_order_cnt), sum(s_remote_cnt) from stock', \
             join_cast_str(self.session.execute('select sum(s_quantity), sum(s_ytd), sum(s_order_cnt), sum(s_remote_cnt) from stock')[0])
         print '--------------------------------------------------------------------------------------------------'
+
+    def get_orderline_stat(self):
+        ol_amount = 0
+        ol_quantity = 0
+        for w_id in range(1, 17):
+            for d_id in range(1, 11):
+                query = 'select sum(ol_amount), sum(ol_quantity) from order_line' \
+                        ' where ol_w_id = {} and ol_d_id = {}'.format(w_id, d_id)
+                result = list(self.session.execute(query))[0]
+                ol_amount += int(result[0])
+                ol_quantity += int(result[1])
+        return ol_amount, ol_quantity
