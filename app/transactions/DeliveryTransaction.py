@@ -50,22 +50,23 @@ class DeliveryTransaction(Transaction):
             if not smallest_order_number:
                 continue
 
-            self.session.execute(
-                increment_smallest_order.bind([int(smallest_order_number) + 1, w_id, num]))
             customer_id = self.get_customer_id(num, smallest_order_number)
             if not customer_id:
                 continue
+
+            customer_balance_delivery = self.get_customer_balance_delivery(customer_id, num)
+            if not customer_balance_delivery:
+                continue
+
+            self.session.execute(
+                increment_smallest_order.bind([int(smallest_order_number) + 1, w_id, num]))
 
             self.update_order(smallest_order_number, carrier_id, num)
             sum_order = 0.
             for ol_number in self.get_order_line_number(smallest_order_number, num):
                 sum_order += float(ol_number.ol_amount)
                 self.update_order_line(smallest_order_number, num, ol_number.ol_number)
-            customer_balance_delivery = self.get_customer_balance_delivery(customer_id, num)
-
-            if not customer_balance_delivery:
-                continue
-
+            
             delivery_cnt = customer_balance_delivery.c_delivery_cnt
             current_balance = customer_balance_delivery.c_balance
             self.update_customer_balance_delivery(customer_id, sum_order, num, current_balance, delivery_cnt)
