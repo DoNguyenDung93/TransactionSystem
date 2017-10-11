@@ -17,7 +17,7 @@ cd 4224-project-files/data-files
 ./replacenull.sh
 echo "Done replacing null values"
 cd ../../
-
+mkdir data-files
 time python app/DataTransformer.py -p 4224-project-files/data-files/ -o data-files/
 
 echo "Setting up models for Cassandra"
