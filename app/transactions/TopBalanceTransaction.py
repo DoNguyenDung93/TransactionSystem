@@ -33,7 +33,7 @@ class TopBalanceTransaction(Transaction):
     def get_top_10_balance_users(self):
 
         result = []
-        for warehouse_id in range(1, 16):
+        for warehouse_id in range(1, 17):
             warehouse_top_balance = self.get_top_10_balance_users_by_w_id(warehouse_id)
             # Combine results but only keep 10 top results
             result += warehouse_top_balance
