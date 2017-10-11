@@ -7,8 +7,7 @@ class PopularItemTransaction(Transaction):
         d_id = int(params['d_id'])
         num_last_orders = int(params['l'])
 
-        next_order_id = self.get_next_order_id(w_id, d_id)
-        last_l_orders = self.get_last_l_orders(w_id, d_id, next_order_id, num_last_orders)
+        last_l_orders = self.get_last_l_orders(w_id, d_id, num_last_orders)
         orderlines_for_orders = self.get_orderlines_for_orders(w_id, d_id, last_l_orders)
 
         if not orderlines_for_orders:
@@ -28,10 +27,10 @@ class PopularItemTransaction(Transaction):
         c_middle, c_last
      Get the last num_last_orders orders belonging to a (warehouse_id, district_id) 
     """
-    def get_last_l_orders(self, w_id, d_id, next_order_id, num_last_orders):
+    def get_last_l_orders(self, w_id, d_id, num_last_orders):
         results = self.session.execute('select o_id, o_entry_d, c_first, c_middle, c_last from order_'
-                                  ' where o_w_id = {} and o_d_id = {} and o_id >= {}'
-                                  .format(w_id, d_id, next_order_id - num_last_orders))
+                                  ' where o_w_id = {} and o_d_id = {} order by o_id desc limit {}'
+                                  .format(w_id, d_id, num_last_orders))
         return list(results)
 
     """list(list((any, any, any)): list of order lines for each order. Each orderline has ol_quantity, ol_i_id, ol_i_id, 
