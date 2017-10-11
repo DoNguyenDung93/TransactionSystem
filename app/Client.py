@@ -67,6 +67,7 @@ class Client:
         cluster = Cluster()
         session = cluster.connect('cs4224')
         session.default_consistency_level = DEFAULT_CONSISTENCY_LEVEL
+        session.request_timeout = 1000000000000000
 
         # Reading transactions line by line, parsing and execute
         while True:
