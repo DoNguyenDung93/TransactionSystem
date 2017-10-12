@@ -66,7 +66,7 @@ class DeliveryTransaction(Transaction):
             for ol_number in self.get_order_line_number(smallest_order_number, num):
                 sum_order += float(ol_number.ol_amount)
                 self.update_order_line(smallest_order_number, num, ol_number.ol_number)
-            
+
             delivery_cnt = customer_balance_delivery.c_delivery_cnt
             current_balance = customer_balance_delivery.c_balance
             self.update_customer_balance_delivery(customer_id, sum_order, num, current_balance, delivery_cnt)
@@ -100,7 +100,8 @@ class DeliveryTransaction(Transaction):
     def update_order_line(self, smallest_order_number, num, ol_number):
         # time = datetime.utcnow().isoformat(' ')
         self.session.execute(self.update_order_line_query.bind(
-            [datetime.strptime(datetime.utcnow().isoformat(' '), '%Y-%m-%d %H:%M:%S.%f'),
+            # [datetime.strptime(datetime.utcnow().isoformat(' '), '%Y-%m-%d %H:%M:%S.%f'),
+            [datetime.utcnow(),
              smallest_order_number, num, ol_number]))
 
     # Get the current balance of the customer
