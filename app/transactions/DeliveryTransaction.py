@@ -22,7 +22,6 @@ class DeliveryTransaction(Transaction):
         increment_smallest_order = self.session.prepare('update district_next_smallest_order_id '
                                                         'set d_next_smallest_o_id = ? where d_w_id = ? '
                                                         'and d_id = ?')
-        self.verify_order_number = self.session.prepare('select o_c_id ')
         self.get_customer_id_query = self.session.prepare('select o_c_id from order_ where o_w_id = {} '
                                                           'and o_d_id = ? and o_id = ?'.format(w_id))
         self.update_order_query = self.session.prepare('update order_ set o_carrier_id = ? where o_id = ? '
