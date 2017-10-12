@@ -50,6 +50,9 @@ class DeliveryTransaction(Transaction):
             if not smallest_order_number:
                 continue
 
+            if smallest_order_number == 3001:
+                continue
+
             customer_id = self.get_customer_id(num, smallest_order_number)
             if not customer_id:
                 continue
