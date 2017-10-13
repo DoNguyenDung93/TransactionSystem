@@ -71,8 +71,8 @@ class DeliveryTransaction(Transaction):
             current_balance = customer_balance_delivery.c_balance
             self.update_customer_balance_delivery(customer_id, sum_order, num, current_balance, delivery_cnt)
 
-        print 'Delivery Transaction done'
-        print
+        # print 'Delivery Transaction done'
+        # print
 
     # Find the order with the smallest O_ID using W_ID and DISTRICT_NO from 1 to 10
     # and O_CARRIER_ID = -1
