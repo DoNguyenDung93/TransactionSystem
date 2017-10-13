@@ -14,7 +14,7 @@ class PaymentTransaction(Transaction):
 		warehouse_print = self.update_warehouse(c_w_id, payment)
 		district_print = self.update_district(c_w_id, c_d_id, payment)
 		customer_print, new_c_balance = self.update_customer(c_w_id, c_d_id, c_id, payment)
-		self.print_output(c_id, c_w_id, c_d_id, warehouse_print, district_print, customer_print, new_c_balance, payment)
+		# self.print_output(c_id, c_w_id, c_d_id, warehouse_print, district_print, customer_print, new_c_balance, payment)
 
 	def update_warehouse(self, warehouse_id, payment):
 		"""Increment w_ytd by payment, return warehouse print outputs"""
