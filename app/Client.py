@@ -57,7 +57,7 @@ class Client:
         try:
             transaction.execute(transaction_params)
         except Exception:
-            print "Transaction could not be executed", traceback.format_exc()
+            print "Transaction could not be executed"#, traceback.format_exc()
 
 
     """ Initalize necessary objects, read and execute transaction.
