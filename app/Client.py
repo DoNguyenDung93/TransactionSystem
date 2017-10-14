@@ -4,6 +4,7 @@ import traceback
 from StatsCollector import StatsCollector
 from Parser import Parser
 from cassandra.cluster import Cluster
+from cassandra.policies import TokenAwarePolicy, DCAwareRoundRobinPolicy, RetryPolicy
 from transactions.DummyTransaction import DummyTransaction
 from transactions.NewOrderTransaction import NewOrderTransaction
 from transactions.PaymentTransaction import PaymentTransaction
@@ -64,7 +65,9 @@ class Client:
     """
     def execute(self):
         # Connect to cassandra server
-        cluster = Cluster()
+        cluster = Cluster(
+            load_balancing_policy=TokenAwarePolicy(DCAwareRoundRobinPolicy()),
+            default_retry_policy=RetryPolicy())
         session = cluster.connect('cs4224')
         session.default_consistency_level = DEFAULT_CONSISTENCY_LEVEL
         session.execute.im_self.default_timeout = 1000000000000000
