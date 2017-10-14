@@ -101,9 +101,9 @@ class NewOrderTransaction(Transaction):
 			else:
 				counter = 0
 			new_s_remote_cnt = row.s_remote_cnt + counter
-			prepared_query = self.session.prepare('UPDATE stock SET s_quantity = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ? WHERE s_w_id = ? AND s_i_id = ?')
-			bound_query = prepared_query.bind([Decimal(adjusted_qty), Decimal(new_s_ytd), int(new_s_order_cnt), int(new_s_remote_cnt), int(supplier_warehouse), int(item_number)])
-			self.session.execute(bound_query)
+			prepared_query1 = self.session.prepare('UPDATE stock SET s_quantity = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ? WHERE s_w_id = ? AND s_i_id = ?')
+			bound_query1 = prepared_query1.bind([Decimal(adjusted_qty), Decimal(new_s_ytd), int(new_s_order_cnt), int(new_s_remote_cnt), int(supplier_warehouse), int(item_number)])
+			self.session.execute(bound_query1)
 			item_result.append(row.i_name)
 			item_result.append(supplier_warehouse)
 			item_result.append(quantity)
@@ -111,9 +111,9 @@ class NewOrderTransaction(Transaction):
 			item_result.append(item_amount)
 			item_result.append(adjusted_qty)
 			total_amount = total_amount + item_amount
-			prepared_query = self.session.prepare('INSERT INTO order_line(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info, i_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-			bound_query = prepared_query.bind([int(w_id), int(d_id), int(n), int(index), int(item_number), None, item_amount, supplier_warehouse, quantity, 'S_DIST'+str(d_id), row.i_name])
-			self.session.execute(bound_query)
+			prepared_query2 = self.session.prepare('INSERT INTO order_line(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info, i_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+			bound_query2 = prepared_query2.bind([int(w_id), int(d_id), int(n), int(index), int(item_number), None, item_amount, supplier_warehouse, quantity, 'S_DIST'+str(d_id), row.i_name])
+			self.session.execute(bound_query2)
 			result.append(item_result)
 
 		total_amount = total_amount * (1 + d_tax + w_tax) * (1 - c_discount)
