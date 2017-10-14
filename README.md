@@ -1,40 +1,42 @@
 
 
-# TransactionSystem
+# Cassandra Benchmarking Project
 
-### Requirements
+### Installing dependencies
 
-Python 2.7, Cassandra 3.11, Pip
+- On each of the 5 cluster nodes, install [Cassandra 3.11](http://www.apache.org/dyn/closer.lua/cassandra/3.11.1/apache-cassandra-3.11.1-bin.tar.gz)
+ by following the instruction to install Cassandra from tarball [here](http://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files). Add `$CASSANDRA_HOME/bin` to your `PATH` so that you can run `cassandra` and `cqlsh` from anywhere.
+- You should also have `Python 2.7` and `pip` installed. If you have no sudo access to the server, refer to [this guide](https://gist.github.com/saurabhshri/46e4069164b87a708b39d947e4527298) on how to install pip without sudo access.
+- Install the python dependencies using `pip install --user -r requirements.txt`
 
-### Getting started
+### Configuring Cassandra
 
-Set up the database with `./setup.sh`
+In the directory `conf`, you should find the cassandra configuration files for each of 5 cluster nodes. Replace the `cassandra.yaml`
+in each of your cluster nodes with these files. Note that you will have to change the IP addresses in these files to fit your server setup.
 
-
-Configure these settings in the `cassandra.yaml`
+The changes required are 
 
 ```
-# How long the coordinator should wait for read operations to complete
-read_request_timeout_in_ms: 30000
-# How long the coordinator should wait for seq or index scans to complete
-range_request_timeout_in_ms: 30000
-# How long the coordinator should wait for writes to complete
-write_request_timeout_in_ms: 30000
-# How long the coordinator should wait for counter writes to complete
-counter_write_request_timeout_in_ms: 30000
-# How long a coordinator should continue to retry a CAS operation
-# that contends with other proposals for the same row
-cas_contention_timeout_in_ms: 30000
-# How long the coordinator should wait for truncates to complete
-# (This can be much longer, because unless auto_snapshot is disabled
-# we need to flush first so we can snapshot before removing the data.)
-truncate_request_timeout_in_ms: 60000
-# The default timeout for other, miscellaneous operations
-request_timeout_in_ms: 30000
+seed_provider:
+  - class_name: org.apache.cassandra.locator.SimpleSeedProvider
+    parameters:
+         - seeds: "your_server_ip,your_server_ip_2,...your_server_ip_n"
+
+. . .
+
+listen_address: your_server_ip
 ```
 
-Install the Python dependencies with `pip install -r requirements.txt`
+### Setup the schema
 
-# Running Transactions
+- Start the cassandra servers on all 5 nodes
 
-Go into `app` directory and run `python Client.py`
+- Go to any one of your cluster nodes, make sure that `cqlsh` can be run from anywhere, and run `./setup.sh`
+
+### Running benchmarks
+
+- For benchmarking, it's required that you have a server that has passwordless shh access to the 5 cluster nodes.
+
+- Run './benchmark.sh <NUMBER_OF_CLIENTS> <CONSISTENCY_LEVEL>' to start benchmarking. For `CONSISTENCY_LEVEL`, `1` denote consistency 
+level `ONE`, while `4` denotes consistency level `QUORUM`. Log files will be created in your working directory when the benchmark script is running, so it is recommended that you run
+the benchmarking inside a separate directory, and allocate enough memory to it (around 2GB).
