@@ -22,7 +22,7 @@ done
 wait
 rm -f db_state.txt
 touch db_state.txt
-ssh "cs4224h@xcnd35.comp.nus.edu.sg" \
+ssh ${acc_arr[0]} \
  "cd TransactionSystem-master && python app/FinalOutputer.py ${LEVEL}" 2>&1 | tee -a db_state.txt
 
 echo `date` >> duration.txt
