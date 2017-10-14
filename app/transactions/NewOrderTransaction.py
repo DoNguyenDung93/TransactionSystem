@@ -89,7 +89,7 @@ class NewOrderTransaction(Transaction):
 		for index, (item_number, supplier_warehouse, quantity) in enumerate(orders):
 			item_result = []
 			item_result.append(item_number)
-			row = self.session.execute('SELECT s_quantity, s_ytd, s_order_cnt, s_remote_cnt FROM stock WHERE s_w_id = {} AND s_i_id = {}'.format(int(supplier_warehouse), int(item_number)))
+			row = self.session.execute('SELECT s_quantity, s_ytd, s_order_cnt, s_remote_cnt, i_price, i_name FROM stock WHERE s_w_id = {} AND s_i_id = {}'.format(int(supplier_warehouse), int(item_number)))
 			row = row[0]
 			adjusted_qty = int(row.s_quantity) - quantity
 			if adjusted_qty < 10:
@@ -104,17 +104,15 @@ class NewOrderTransaction(Transaction):
 			prepared_query = self.session.prepare('UPDATE stock SET s_quantity = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ? WHERE s_w_id = ? AND s_i_id = ?')
 			bound_query = prepared_query.bind([Decimal(adjusted_qty), Decimal(new_s_ytd), int(new_s_order_cnt), int(new_s_remote_cnt), int(supplier_warehouse), int(item_number)])
 			self.session.execute(bound_query)
-			item = self.session.execute('SELECT i_price, i_name FROM item WHERE i_id = {}'.format(item_number))
-			item = item[0]
-			item_result.append(item.i_name)
+			item_result.append(row.i_name)
 			item_result.append(supplier_warehouse)
 			item_result.append(quantity)
-			item_amount = quantity * item.i_price
+			item_amount = quantity * row.i_price
 			item_result.append(item_amount)
 			item_result.append(adjusted_qty)
 			total_amount = total_amount + item_amount
-			prepared_query = self.session.prepare('INSERT INTO order_line(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-			bound_query = prepared_query.bind([int(w_id), int(d_id), int(n), int(index), int(item_number), None, item_amount, supplier_warehouse, quantity, 'S_DIST'+str(d_id)])
+			prepared_query = self.session.prepare('INSERT INTO order_line(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info, i_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+			bound_query = prepared_query.bind([int(w_id), int(d_id), int(n), int(index), int(item_number), None, item_amount, supplier_warehouse, quantity, 'S_DIST'+str(d_id), row.i_name])
 			self.session.execute(bound_query)
 			result.append(item_result)
 
