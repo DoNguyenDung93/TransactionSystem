@@ -11,32 +11,24 @@
 
 ### Configuring Cassandra
 
+- Specify your cluster nodes' ip addresses and login details in `config.txt`. Make sure they are in order.
+- Run `./configure.sh`
+
 In the directory `conf`, you should find the cassandra configuration files for each of 5 cluster nodes. Replace the `cassandra.yaml`
-in each of your cluster nodes with these files. Note that you will have to change the IP addresses in these files to fit your server setup.
-
-The changes required are 
-
-```
-seed_provider:
-  - class_name: org.apache.cassandra.locator.SimpleSeedProvider
-    parameters:
-         - seeds: "your_server_ip,your_server_ip_2,...your_server_ip_n"
-
-. . .
-
-listen_address: your_server_ip
-```
+in each of your cluster nodes with these files.
 
 ### Setup the schema
 
-- Start the cassandra servers on all 5 nodes
+- Start the cassandra servers on all 5 nodes (by running `cassandra`)
 
-- Go to any one of your cluster nodes, make sure that `cqlsh` can be run from anywhere, and run `./setup.sh`
+- Go to any one of your cluster nodes, again make sure that `cqlsh` can be run from anywhere, and run `./setup.sh`
 
 ### Running benchmarks
 
+- On each of the cluster nodes, download the project codes from [here](https://github.com/DoNguyenDung93/TransactionSystem/archive/master.zip) and unzip it inside the home folder
+
 - For benchmarking, it's required that you have a server that has passwordless shh access to the 5 cluster nodes.
 
-- Run './benchmark.sh <NUMBER_OF_CLIENTS> <CONSISTENCY_LEVEL>' to start benchmarking. For `CONSISTENCY_LEVEL`, `1` denote consistency 
+- Run `./benchmark.sh <NUMBER_OF_CLIENTS> <CONSISTENCY_LEVEL>` to start benchmarking. For `CONSISTENCY_LEVEL`, `1` denote consistency 
 level `ONE`, while `4` denotes consistency level `QUORUM`. Log files will be created in your working directory when the benchmark script is running, so it is recommended that you run
 the benchmarking inside a separate directory, and allocate enough memory to it (around 2GB).
