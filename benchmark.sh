@@ -38,7 +38,7 @@ for f in `ls | grep log`; do
   next=`tail -1 $f | awk '{ print $3 }'`
   sum=`echo $sum $next | awk '{print $1 + $2}'`
   min=`echo $min $next | awk '{if($2<$1){print $2}else{print $1}}'`
-  max=`echo $min $next | awk '{if($2>$1){print $2}else{print $1}}'`
+  max=`echo $max $next | awk '{if($2>$1){print $2}else{print $1}}'`
 done
 
 avg=`echo $sum $NR | awk '{print $1 / $2}'`
