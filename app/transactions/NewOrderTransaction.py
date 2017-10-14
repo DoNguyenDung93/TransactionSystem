@@ -123,7 +123,7 @@ class NewOrderTransaction(Transaction):
 		"""Print output for the customer"""
 		print
 		print "Customer w_d_c_id:	{} {} {}".format(w_id, d_id, c_id)
-		print "Customer lastname:	".format(customer.c_last)
+		print "Customer lastname:	{}".format(customer.c_last)
 		print "Credit:			{}".format(customer.c_credit)
 		print "Discount:		{}".format(customer.c_discount)
 		print "Warehouse tax:		{}".format(w_tax)
