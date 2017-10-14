@@ -45,10 +45,10 @@ class TopBalanceTransaction(Transaction):
         # Get top 10 users with most balance
         users = self.get_top_10_balance_users()
 
-        # print 'Top 10 customers'
-        # for user in users:
-        #     print 'Name:', user.c_first, user.c_middle, user.c_last
-        #     print 'Balance:', user.c_balance
-        #     print 'Warehouse:', user.w_name
-        #     print 'District', user.d_name
-        #     print
+        print 'Top 10 customers'
+        for user in users:
+            print 'Name:', user.c_first, user.c_middle, user.c_last
+            print 'Balance:', user.c_balance
+            print 'Warehouse:', user.w_name
+            print 'District', user.d_name
+            print
