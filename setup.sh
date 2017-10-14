@@ -22,4 +22,4 @@ time python app/DataTransformer.py -p 4224-project-files/data-files/ -o data-fil
 
 echo "Setting up models for Cassandra"
 time cqlsh -f Schema_Commands.txt
-echo "Loading data"
+echo "Done loading data"
