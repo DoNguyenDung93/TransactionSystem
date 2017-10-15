@@ -108,9 +108,9 @@ class Client:
     def output(self):
         transaction_count = self.stats_collector.transactions.get_count()
         transaction_time = self.stats_collector.transaction_timer.get_total_time()
-        print "Number of transactions executed: %s" % transaction_count
-        print "Total execution time: %s" % transaction_time
-        print "Execution throughput: %s (xact/s)" % (transaction_count * 1.0 / transaction_time)
+        sys.stderr.write("Number of transactions executed: %s\n" % transaction_count)
+        sys.stderr.write("Total execution time: %s\n" % transaction_time)
+        sys.stderr.write("Execution throughput: %s (xact/s)\n" % (transaction_count * 1.0 / transaction_time))
 
 if __name__ == "__main__":
     print "Executing client"

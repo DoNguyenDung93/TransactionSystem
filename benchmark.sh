@@ -14,7 +14,7 @@ for i in `seq 1 ${NC}`; do
     touch $log
     acc=${acc_arr[$(($serverIdx))]}
     ssh ${acc} \
-     "cd TransactionSystem-master && python app/Client.py ${LEVEL} < 4224-project-files/xact-files/${i}.txt" \
+     "cd TransactionSystem-master && python app/Client.py ${LEVEL} < 4224-project-files/xact-files/${i}.txt > /dev/null" \
      2>&1 | tee -a $log &
 done
 
@@ -42,6 +42,6 @@ for f in `ls | grep log`; do
 done
 
 avg=`echo $sum $NR | awk '{print $1 / $2}'`
-echo "Average throughput: $avg (xacts/s)" | tee -a aggregate.txt
-echo "Min throughput: $min (xacts/s)" | tee -a aggregate.txt
-echo "Max throughput: $max (xacts/s)" | tee -a aggregate.txt
+>&2 echo "Average throughput: $avg (xacts/s)" | tee -a aggregate.txt
+>&2 echo "Min throughput: $min (xacts/s)" | tee -a aggregate.txt
+>&2 echo "Max throughput: $max (xacts/s)" | tee -a aggregate.txt
