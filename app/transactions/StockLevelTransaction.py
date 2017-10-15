@@ -11,8 +11,8 @@ class StockLevelTransaction(Transaction):
         next_order_id = self.get_next_order_id(w_id, d_id)
         last_l_item_ids = self.get_last_l_item_ids(w_id, d_id, next_order_id, num_last_orders)
         num_items = self.count_items_below_threshold(w_id, last_l_item_ids, threshold)
-        # print
-        # print 'Total Num Items where stock quantity below threshold:', num_items
+        print
+        print 'Total Num Items where stock quantity below threshold:', num_items
 
     """set(int): set of item ids
      Get the item ids belonging to the last l orders of a (warehouse id, district id)

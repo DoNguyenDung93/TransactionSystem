@@ -20,8 +20,8 @@ class PopularItemTransaction(Transaction):
 
         print 'District Identifier ({}, {})'.format(w_id, d_id)
         print 'Number of last orders to be examined {}'.format(num_last_orders)
-        # self.print_order_info(last_l_orders, popular_items_with_quantity, item_ids_names)
-        # self.print_popular_items_info(popular_items_with_quantity, item_ids_names)
+        self.print_order_info(last_l_orders, popular_items_with_quantity, item_ids_names)
+        self.print_popular_items_info(popular_items_with_quantity, item_ids_names)
 
     """list((any, any, any, any, any, any)): list of last orders, where each order has o_id, o_entry, c_first,
         c_middle, c_last
